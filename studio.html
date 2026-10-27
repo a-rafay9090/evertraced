@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Your Book – Evertraced</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  .studio-wrap { padding: 100px 20px 80px; max-width: 880px; margin: 0 auto; }
+  .studio-head { text-align: center; }
+  .type-badge { background: var(--yellow); color: #222; font-size: .72rem; font-weight: 800; padding: 5px 14px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; display: inline-block; }
+  .studio-head h1 { margin-top: 14px; font-size: clamp(1.5rem,3.5vw,2.4rem); font-weight: 400; }
+  .studio-head p { margin-top: 8px; color: rgba(255,255,255,0.7); font-size: .9rem; }
+
+  .dots { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin: 34px auto 0; max-width: 480px; text-align: center; }
+  .dot-item .circ { width: 34px; height: 34px; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 800; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.6); }
+  .dot-item.active .circ { background: var(--pink); color: #fff; }
+  .dot-item.done .circ { background: var(--yellow); color: #222; }
+  .dot-item p { margin-top: 6px; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: rgba(255,255,255,0.55); }
+
+  .step-panel { margin-top: 34px; display: none; }
+  .step-panel.active { display: block; }
+
+  .template-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .template-card { border: 2px solid transparent; border-radius: 16px; padding: 18px; text-align: left; cursor: pointer; background: rgba(255,255,255,0.06); color: #fff; }
+  .template-card.selected { border-color: var(--yellow); background: rgba(233,30,140,0.25); }
+  .template-card strong { font-size: .95rem; }
+  .template-card p { margin-top: 6px; font-size: .78rem; color: rgba(255,255,255,0.7); line-height: 1.5; }
+
+  .dropzone { border: 2px dashed rgba(255,255,255,0.35); border-radius: 20px; padding: 40px 20px; text-align: center; background: rgba(255,255,255,0.04); }
+  .dropzone.dragover { border-color: var(--teal); background: rgba(0,188,212,0.08); }
+  .dropzone p { font-size: .85rem; color: rgba(255,255,255,0.8); margin-top: 10px; }
+  .dropzone small { display: block; margin-top: 10px; color: rgba(255,255,255,0.45); font-size: .7rem; }
+
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap: 12px; margin-top: 20px; }
+  .photo-thumb { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; background: #001a2e; }
+  .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-thumb button { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; border: none; background: rgba(0,0,0,0.7); color: #fff; font-size: .7rem; cursor: pointer; }
+  #photoEmpty { text-align: center; margin-top: 16px; font-size: .8rem; color: rgba(255,255,255,0.5); }
+
+  .caption-row { display: flex; gap: 14px; align-items: flex-start; background: rgba(255,255,255,0.06); border-radius: 14px; padding: 12px; margin-bottom: 10px; }
+  .caption-row img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; flex-shrink: 0; margin-top: 26px; }
+  .caption-row .field { flex: 1; margin-bottom: 0; }
+
+  .compose-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  .cover-preview { position: relative; overflow: hidden; aspect-ratio: 3/4; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+  .cover-preview-image { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .cover-preview-overlay { position: absolute; inset: 0; background: linear-gradient(160deg,#0e3f78,#022764 60%,#001333); transition: background .2s ease; }
+  .cover-preview.has-image .cover-preview-overlay { background: linear-gradient(180deg, rgba(0,10,25,0.1), rgba(0,10,25,0.78) 65%, rgba(0,10,25,0.9)); }
+  .cover-preview-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+  .cover-preview h3 { margin-top: 18px; font-size: 1.4rem; font-weight: 800; }
+  .cover-preview p { margin-top: 6px; font-size: .82rem; color: rgba(255,255,255,0.6); }
+  .cover-photo-btn { position: absolute; z-index: 3; top: 14px; right: 14px; background: rgba(0,0,0,0.55); color: #fff; font-size: .68rem; font-weight: 700; padding: 7px 12px; border-radius: 20px; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
+  .cover-photo-btn:hover { background: rgba(0,0,0,0.75); }
+  .progress-track { height: 8px; border-radius: 6px; background: rgba(255,255,255,0.15); overflow: hidden; margin-top: 14px; }
+  .progress-bar { height: 100%; width: 0%; background: var(--yellow); transition: width .3s ease; }
+  .compose-result { margin-top: 26px; border-radius: 20px; background: rgba(0,188,212,0.12); border: 1px solid rgba(0,188,212,0.35); padding: 26px; text-align: center; display: none; }
+
+  .nav-buttons { display: flex; justify-content: space-between; margin-top: 40px; gap: 12px; }
+
+  @media (max-width: 991.98px) {
+    .studio-wrap { padding: 90px 18px 70px; }
+    .template-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 767.98px) {
+    .template-grid { grid-template-columns: 1fr; }
+    .compose-grid { grid-template-columns: 1fr; }
+    .dots p { font-size: .58rem; }
+    .dropzone { padding: 30px 16px; }
+  }
+  @media (max-width: 575.98px) {
+    .studio-wrap { padding: 84px 14px 60px; }
+    .dots { gap: 6px; }
+    .dot-item .circ { width: 28px; height: 28px; font-size: .68rem; }
+    .caption-row { flex-direction: column; align-items: flex-start; }
+    .caption-row img { width: 100%; height: 140px; }
+    .nav-buttons { flex-direction: column-reverse; }
+    .nav-buttons .btn { width: 100%; justify-content: center; }
+  }
+</style>
+<link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="brand">Evertraced<span class="d">'S</span></a>
+  <nav class="nav-left">
+    <a href="index.html">Begin Journey</a>
+    <a href="ebooks.html">E-Books</a>
+    <a href="index.html#pricing">Pricing</a>
+  </nav>
+  <div class="nav-right">
+    <a href="cart.html" class="cart-btn" aria-label="Cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span class="cart-badge" data-et-cart-badge>0</span>
+    </a>
+    <a href="signin.html" class="user-btn" data-et-user-btn aria-label="Account / Sign in">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="cart.html">Cart</a>
+  <a href="index.html">Begin Journey</a>
+  <a href="ebooks.html">E-Books</a>
+  <a href="index.html#pricing">Pricing</a>
+  <a href="signin.html">Sign In</a>
+</div>
+
+<main class="studio-wrap">
+  <div class="studio-head">
+    <span class="type-badge" id="typeBadge">Travel Book</span>
+    <h1 id="typeTitle">Create your <span class="script">Travel Book</span></h1>
+    <p id="typeBlurb">Every border crossed, every skyline — bound into one cinematic keepsake.</p>
+  </div>
+
+  <div class="dots" id="stepDots">
+    <div class="dot-item active" data-dot="1"><div class="circ">01</div><p>Template</p></div>
+    <div class="dot-item" data-dot="2"><div class="circ">02</div><p>Photos</p></div>
+    <div class="dot-item" data-dot="3"><div class="circ">03</div><p>Captions</p></div>
+    <div class="dot-item" data-dot="4"><div class="circ">04</div><p>Compose</p></div>
+  </div>
+
+  <section class="step-panel active" data-panel="1">
+    <div class="template-grid" id="templateGrid"></div>
+  </section>
+
+  <section class="step-panel" data-panel="2">
+    <div class="dropzone" id="dropzone">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto;"><path d="M12 16V4M12 4 7 9M12 4l5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+      <p><strong>Drag photos here</strong>, or</p>
+      <label class="btn btn-pink" style="margin-top:10px; cursor:pointer;">
+        Choose Files
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" />
+      </label>
+      <small>Photos stay on this device — nothing is uploaded to a server in this demo.</small>
+    </div>
+    <div class="photo-grid" id="photoGrid"></div>
+    <p id="photoEmpty">No photos yet — add at least one to continue.</p>
+  </section>
+
+  <section class="step-panel" data-panel="3">
+    <div id="captionList"></div>
+  </section>
+
+  <section class="step-panel" data-panel="4">
+    <div class="compose-grid">
+      <div>
+        <div class="field"><label for="bookTitle">Book Title</label><input id="bookTitle" /></div>
+        <div class="field"><label for="bookSubtitle">Subtitle</label><input id="bookSubtitle" /></div>
+        <button class="btn btn-pink btn-block" id="composeBtn">Compose Preview</button>
+        <div class="progress-track" id="progressTrack" style="display:none;"><div class="progress-bar" id="progressBar"></div></div>
+        <p id="progressStatus" style="display:none; margin-top:8px; font-size:.78rem; color:rgba(255,255,255,0.65);">Laying out pages…</p>
+      </div>
+      <div class="cover-preview" id="coverPreview">
+        <div class="cover-preview-image" id="coverPreviewImage"></div>
+        <div class="cover-preview-overlay"></div>
+        <label class="cover-photo-btn" for="coverImageInput">🖼 Add Cover Photo</label>
+        <input type="file" id="coverImageInput" accept="image/*" style="display:none;" />
+        <div class="cover-preview-content">
+          <p class="script" style="font-size:1.4rem;">E-Books</p>
+          <h3 id="coverTitle">Your Book Title</h3>
+          <p id="coverSubtitle">A subtitle appears here</p>
+        </div>
+      </div>
+    </div>
+    <div class="compose-result" id="composeResult">
+      <h3 style="font-size:1.2rem;">Your Storybook Is Ready To Unlock ✦</h3>
+      <p style="margin-top:8px; font-size:.85rem; color:rgba(255,255,255,0.75);">Preview composed with <strong id="resultCount">0</strong> photos across your <strong id="resultType">Travel</strong> edition.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top:16px;">
+        <a href="#" id="previewBookLink" class="btn btn-pink">Flip Through Your Book →</a>
+        <a href="index.html#pricing" class="btn btn-yellow">See Pricing &amp; Unlock</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="nav-buttons">
+    <button class="btn btn-outline" id="backBtn" disabled>← Back</button>
+    <button class="btn btn-pink" id="nextBtn">Next →</button>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-logo">Evertraced</div>
+  <p>© 2026 Evertraced. Your Story, Beautifully Preserved.</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="ebooks.html">E-Books</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="signin.html">Sign In</a>
+    <a href="preview.html?type=travel">Preview My Book</a>
+    <a href="mybooks.html">My Books</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/scroll-animations.js"></script>
+<script src="js/studio.js"></script>
+<script src="js/polish.js" defer></script>
+</body>
+</html>

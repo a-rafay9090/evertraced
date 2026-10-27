@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>E-Books – Evertraced</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  .gallery-wrap {
+    padding: 100px 20px 80px; max-width: 1080px; margin: 0 auto;
+    position: relative; z-index: 1;
+  }
+  .gallery-bg {
+    position: fixed; inset: 0; z-index: -1;
+    background-image: url("assets/img/ebook bg.png");
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+  }
+  .gallery-head { text-align: center; }
+  .gallery-head h1 { font-size: clamp(1.6rem,3.5vw,2.4rem); font-weight: 400; }
+  .gallery-head p { margin-top: 8px; color: rgba(255,255,255,0.7); font-size: .9rem; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 30px; }
+  .filter-btn { border: none; border-radius: 30px; padding: 9px 18px; font-size: .78rem; font-weight: 700; cursor: pointer; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+  .filter-btn.active { background: var(--pink); color: #fff; }
+  .book-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 34px; }
+  .book-cover { border-radius: 16px; padding: 16px; aspect-ratio: 3/4; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; border: none; text-align: left; color: #1a1a1a; position: relative; overflow: hidden; }
+  .book-cover.has-image::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.75)); pointer-events: none; }
+  .book-cover .tag, .book-cover .title, .book-cover .pages { position: relative; z-index: 1; }
+  .book-cover .tag { font-size: 10px; font-weight: 800; text-transform: uppercase; background: rgba(0,0,0,0.7); color: #fff; align-self: flex-start; padding: 3px 8px; border-radius: 20px; }
+  .book-cover .title { font-family: var(--font-script); font-size: 1.3rem; line-height: 1.15; color: white; text-align: center; text-shadow: 0 2px 10px rgba(0,0,0,0.65); }
+  .book-cover .pages { font-size: 10px; font-weight: 700; align-self: flex-end; opacity: .85; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
+
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,10,20,0.8); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+  .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+  .modal-panel { background: #ff1493; border-radius: 22px; padding: 26px; max-width: 480px; width: 100%; transform: translateY(14px); transition: transform .3s ease; }
+  .modal-backdrop.open .modal-panel { transform: translateY(0); }
+  .modal-panel .close-btn { float: right; background: rgba(0,0,0,0.3); border: none; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; }
+  .modal-panel h3 { font-size: 1.2rem; margin-top: 8px; }
+  .modal-panel .sample { margin-top: 14px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 14px; font-size: .85rem; font-style: italic; line-height: 1.6; }
+
+  @media (max-width: 1199.98px) { .book-grid { grid-template-columns: repeat(3,1fr); } }
+  @media (max-width: 991.98px) {
+    .gallery-wrap { padding: 90px 18px 70px; }
+    .book-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 575.98px) {
+    .gallery-wrap { padding: 84px 14px 60px; }
+    .book-grid { grid-template-columns: 1fr; gap: 14px; }
+    .filters { gap: 6px; }
+    .filter-btn { padding: 8px 14px; font-size: .72rem; }
+    .modal-panel { padding: 20px; }
+  }
+</style>
+<link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+
+<div class="gallery-bg" aria-hidden="true"></div>
+
+<header>
+  <a href="index.html" class="brand">Evertraced<span class="d">'S</span></a>
+  <nav class="nav-left">
+    <a href="index.html">Begin Journey</a>
+    <a href="ebooks.html" class="active">E-Books</a>
+    <a href="index.html#pricing">Pricing</a>
+  </nav>
+  <div class="nav-right">
+    <a href="cart.html" class="cart-btn" aria-label="Cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span class="cart-badge" data-et-cart-badge>0</span>
+    </a>
+    <a href="signin.html" class="user-btn" data-et-user-btn aria-label="Account / Sign in">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="cart.html">Cart</a>
+  <a href="index.html">Begin Journey</a>
+  <a href="ebooks.html">E-Books</a>
+  <a href="index.html#pricing">Pricing</a>
+  <a href="signin.html">Sign In</a>
+</div>
+
+<main class="gallery-wrap">
+  <div class="gallery-head">
+    <h1>Books People Have <span class="script">Evertraced</span></h1>
+    <p>A shelf of example editions across every expression. Filter by kind, then open one for a sample.</p>
+  </div>
+  <div class="filters" id="filters">
+    <button class="filter-btn" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="travel">Travel</button>
+    <button class="filter-btn" data-filter="memoir">Memoir</button>
+    <button class="filter-btn" data-filter="legacy">Family Legacy</button>
+    <button class="filter-btn" data-filter="wedding">Wedding</button>
+  </div>
+  <div class="book-grid" id="bookGrid"></div>
+</main>
+
+<div class="modal-backdrop" id="etModal">
+  <div class="modal-panel">
+    <button class="close-btn" id="modalClose" aria-label="Close">✕</button>
+    <span class="type-badge" id="modalBadge" style="background:var(--yellow); color:#222; font-size:.68rem; font-weight:800; padding:4px 12px; border-radius:20px; text-transform:uppercase;">Travel</span>
+    <h3 id="modalTitle">Book Title</h3>
+    <p class="sample" id="modalSample"></p>
+    <a href="index.html#categories" class="btn btn-yellow" style="margin-top:18px;">Start a Book Like This</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Evertraced</div>
+  <p>© 2026 Evertraced. Your story, Beautifully Preserved.</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="signin.html">Sign In</a>
+    <a href="preview.html?type=travel">Preview My Book</a>
+    <a href="mybooks.html">My Books</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/scroll-animations.js"></script>
+<script src="js/ebooks.js"></script>
+<script src="js/polish.js" defer></script>
+</body>
+</html>

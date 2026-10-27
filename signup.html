@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Account – Evertraced</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+<style>
+  .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 110px 20px 60px; background: radial-gradient(circle at 70% 10%, #0e3f78 0%, #022764 55%, #001333 100%); }
+  .auth-card { width: 100%; max-width: 420px; }
+  .auth-head { text-align: center; margin-bottom: 22px; }
+  .name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ---------- captcha ---------- */
+  .captcha-box {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.9); border: 1px solid #000; border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 6px;
+  }
+  .captcha-sum { font-weight: 800; font-size: 1rem; color: #111; letter-spacing: .5px; user-select: none; white-space: nowrap; }
+  .captcha-box input { border: 1px solid #000; border-radius: 8px; padding: 8px 10px; width: 70px; font-size: .85rem; font-family: var(--font-play); }
+  .captcha-refresh { background: none; border: none; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 4px; color: #111; }
+  .captcha-refresh:hover { transform: rotate(60deg); transition: transform .2s; }
+
+  /* ---------- email verification step ---------- */
+  .verify-code-row { display: flex; gap: 8px; justify-content: space-between; margin: 6px 0 4px; }
+  .verify-code-row input {
+    width: 46px; height: 54px; text-align: center; font-size: 1.3rem; font-weight: 700;
+    border: 1px solid #000; border-radius: 10px; background: #fff; color: #000;
+    font-family: var(--font-play);
+  }
+  .verify-code-row input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,188,212,0.25); }
+  .demo-code-note {
+    margin-top: 4px; margin-bottom: 16px; background: rgba(0,188,212,0.12);
+    border: 1px dashed rgba(0,188,212,0.5); border-radius: 10px; padding: 10px 12px;
+    font-size: .74rem; line-height: 1.4; color: rgba(255,255,255,0.85);
+  }
+  .demo-code-note strong { color: var(--teal); font-size: .95rem; letter-spacing: 2px; }
+  .resend-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: .76rem; color: rgba(255,255,255,0.7); }
+  .resend-row button { background: none; border: none; color: var(--yellow); font-weight: 700; cursor: pointer; font-size: .76rem; padding: 0; }
+  .resend-row button[disabled] { color: rgba(255,255,255,0.4); cursor: not-allowed; }
+  .step { display: none; }
+  .step.active { display: block; }
+  .change-email-link { display: inline-block; margin-top: 12px; font-size: .76rem; color: rgba(255,255,255,0.75); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; }
+
+  @media (max-width: 767.98px) {
+    .auth-wrap { padding: 100px 18px 50px; }
+  }
+  @media (max-width: 575.98px) {
+    .auth-wrap { padding: 90px 14px 40px; }
+    .form-box { padding: 24px 20px; }
+    .auth-head .script { font-size: 1.9rem !important; }
+    .name-row { grid-template-columns: 1fr; gap: 0; }
+    .verify-code-row input { width: 40px; height: 48px; font-size: 1.1rem; }
+  }
+</style>
+<link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="brand">Evertraced<span class="d">'S</span></a>
+  <nav class="nav-left">
+    <a href="index.html">Begin Journey</a>
+    <a href="ebooks.html">E-Books</a>
+    <a href="index.html#pricing">Pricing</a>
+  </nav>
+  <div class="nav-right">
+    <a href="cart.html" class="cart-btn" aria-label="Cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span class="cart-badge" data-et-cart-badge>0</span>
+    </a>
+    <a href="signin.html" class="user-btn" data-et-user-btn aria-label="Account / Sign in">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="cart.html">Cart</a>
+  <a href="index.html">Begin Journey</a>
+  <a href="ebooks.html">E-Books</a>
+  <a href="index.html#pricing">Pricing</a>
+  <a href="signin.html">Sign In</a>
+</div>
+
+<main class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <p class="script" style="font-size:2.2rem;">Create Your Account</p>
+      <p id="planNote" style="display:none; margin-top:6px; font-size:.8rem; color:rgba(255,255,255,0.75);"></p>
+    </div>
+    <div class="form-box">
+      <!-- STEP 1: account details + captcha -->
+      <form id="signupForm" class="step active" data-step="1" novalidate>
+        <h3>Create Your Account</h3>
+        <div class="name-row">
+          <div class="field">
+            <label for="su-first">First Name</label>
+            <input id="su-first" required placeholder="Jamie" />
+            <p class="field-error">Required.</p>
+          </div>
+          <div class="field">
+            <label for="su-last">Last Name</label>
+            <input id="su-last" required placeholder="Rivera" />
+            <p class="field-error">Required.</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="su-email">Email Address</label>
+          <input id="su-email" type="email" required placeholder="you@example.com" autocomplete="email" />
+          <p class="field-error" id="su-email-error">Enter a valid email address.</p>
+        </div>
+        <div class="field">
+          <label for="su-pass">Password</label>
+          <input id="su-pass" type="password" required minlength="6" placeholder="At least 6 characters" autocomplete="new-password" />
+          <p class="field-error">Use at least 6 characters.</p>
+        </div>
+        <div class="field">
+          <label for="su-captcha">Quick check — solve this</label>
+          <div class="captcha-box">
+            <span class="captcha-sum" id="captchaSum">? + ? =</span>
+            <input id="su-captcha" inputmode="numeric" autocomplete="off" placeholder="?" />
+            <button type="button" class="captcha-refresh" id="captchaRefresh" title="New challenge" aria-label="Get a new challenge">↻</button>
+          </div>
+          <p class="field-error">That's not quite right — try the new sum.</p>
+        </div>
+        <button type="submit" class="btn btn-lime btn-block">Continue →</button>
+        <div style="margin-top:16px;">
+          <button type="button" id="googleSignupBtn" class="social-btn">Continue with Google</button>
+          <button type="button" id="appleSignupBtn" class="social-btn">Continue with Apple</button>
+          <button type="button" id="microsoftSignupBtn" class="social-btn">Continue with Microsoft</button>
+        </div>
+        <p style="margin-top:10px; font-size:.78rem; color:rgba(255,255,255,0.8); text-align:center;">
+          Already Have An Account? <a href="signin.html" style="color:var(--yellow); font-weight:700; text-decoration:none;">Sign In</a>
+        </p>
+      </form>
+
+      <!-- STEP 2: email verification code -->
+      <form id="verifyForm" class="step" data-step="2" novalidate>
+        <h3>Verify Your Email</h3>
+        <p style="font-size:.8rem; color:rgba(255,255,255,0.85); margin-bottom:14px;">
+          Enter the 6-digit code we sent to <strong id="verifyEmailTarget" style="color:var(--yellow);"></strong>.
+        </p>
+        <div class="verify-code-row" id="codeRow">
+          <input maxlength="1" inputmode="numeric" autocomplete="one-time-code" />
+          <input maxlength="1" inputmode="numeric" />
+          <input maxlength="1" inputmode="numeric" />
+          <input maxlength="1" inputmode="numeric" />
+          <input maxlength="1" inputmode="numeric" />
+          <input maxlength="1" inputmode="numeric" />
+        </div>
+        <p class="field-error" id="codeError" style="display:none; margin-bottom:10px;">That code doesn't match. Check the digits and try again.</p>
+        <div class="demo-code-note" id="demoCodeNote">
+          Demo mode — this project has no email server connected yet, so there's nothing to actually deliver the code. Your simulated code is <strong id="demoCodeValue">000000</strong>. Wire up a real provider (e.g. SendGrid, Postmark, AWS SES) on your backend to send this to the inbox instead.
+        </div>
+        <button type="submit" class="btn btn-lime btn-block">Verify &amp; Create Account →</button>
+        <div class="resend-row">
+          <span id="resendLabel">Didn't Get It?</span>
+          <button type="button" id="resendCodeBtn">Resend Code</button>
+        </div>
+        <button type="button" class="change-email-link" id="changeEmailBtn">← Use A Different Email</button>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-logo">Evertraced</div>
+  <p>© 2026 Evertraced. Your Story, Beautifully Preserved.</p>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="ebooks.html">E-Books</a>
+    <a href="signin.html">Sign In</a>
+    <a href="preview.html?type=travel">Preview My Book</a>
+    <a href="mybooks.html">My Books</a>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/scroll-animations.js"></script>
+<script>
+  const plan = new URLSearchParams(window.location.search).get('plan');
+  if (plan) {
+    const note = document.getElementById('planNote');
+    note.textContent = plan === 'hardcover' ? 'Creating your account to unlock the $129 Hard Book.' : 'Creating your account to unlock the $29 Digital Book.';
+    note.style.display = 'block';
+  }
+
+  function continueWithProvider(provider, defaultName) {
+    let user = EvertracedAuth.getUser();
+    if (!user) {
+      user = { firstName: defaultName, email: `you@${provider}.com`, provider, joinedAt: Date.now() };
+      EvertracedAuth.setUser(user);
+    }
+    window.etToast(`Welcome, ${(user.firstName || 'friend')}! Your account is ready.`);
+    const dest = plan ? `package.html?plan=${plan}` : 'studio.html?type=travel';
+    setTimeout(() => { window.location.href = dest; }, 800);
+  }
+  document.getElementById('googleSignupBtn').addEventListener('click', () => continueWithProvider('google', 'Friend'));
+  document.getElementById('appleSignupBtn').addEventListener('click', () => continueWithProvider('apple', 'Friend'));
+  document.getElementById('microsoftSignupBtn').addEventListener('click', () => continueWithProvider('microsoft', 'Friend'));
+
+  /* ---------- email validation ---------- */
+  // Stricter than a bare `x@y.z` check: rejects consecutive/leading/trailing dots
+  // in the local part, requires a real-looking domain with a 2+ letter TLD, and
+  // catches common typo domains so people don't lock themselves out of their own account.
+  function isValidEmail(value) {
+    const v = (value || '').trim();
+    if (v.length < 6 || v.length > 254) return false;
+    const re = /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
+    if (!re.test(v)) return false;
+    if (v.includes('..')) return false;
+    const [local, domain] = v.split('@');
+    if (!local || !domain || local.length > 64) return false;
+    return true;
+  }
+  const COMMON_TYPOS = { 'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gnail.com': 'gmail.com', 'yaho.com': 'yahoo.com', 'outlok.com': 'outlook.com', 'hotmial.com': 'hotmail.com' };
+  function suggestedFix(value) {
+    const at = value.lastIndexOf('@');
+    if (at === -1) return null;
+    const domain = value.slice(at + 1).toLowerCase();
+    return COMMON_TYPOS[domain] ? value.slice(0, at + 1) + COMMON_TYPOS[domain] : null;
+  }
+
+  /* ---------- captcha (client-side math challenge) ---------- */
+  // Note: a client-only captcha only slows down naive bots — it can't stop a scripted
+  // attacker who reads the DOM. For real bot protection, swap this for a server-verified
+  // service (Google reCAPTCHA / hCaptcha / Cloudflare Turnstile) once there's a backend.
+  let captchaAnswer = 0;
+  function newCaptcha() {
+    const a = 1 + Math.floor(Math.random() * 9);
+    const b = 1 + Math.floor(Math.random() * 9);
+    captchaAnswer = a + b;
+    document.getElementById('captchaSum').textContent = `${a} + ${b} =`;
+    document.getElementById('su-captcha').value = '';
+  }
+  document.getElementById('captchaRefresh').addEventListener('click', newCaptcha);
+  newCaptcha();
+
+  /* ---------- step switching ---------- */
+  const stepForm = document.getElementById('signupForm');
+  const verifyForm = document.getElementById('verifyForm');
+  function goToStep(n) {
+    [stepForm, verifyForm].forEach((s) => s.classList.remove('active'));
+    (n === 1 ? stepForm : verifyForm).classList.add('active');
+  }
+
+  /* ---------- verification code state ---------- */
+  let pendingUser = null;
+  let currentCode = null;
+  let resendTimer = null;
+
+  function generateCode() { return String(Math.floor(100000 + Math.random() * 900000)); }
+
+  function sendVerificationCode(email) {
+    currentCode = generateCode();
+    document.getElementById('verifyEmailTarget').textContent = email;
+    document.getElementById('demoCodeValue').textContent = currentCode;
+    document.getElementById('codeError').style.display = 'none';
+    const inputs = document.querySelectorAll('#codeRow input');
+    inputs.forEach((i) => { i.value = ''; i.closest('#codeRow') && i.classList.remove('bad'); });
+    if (inputs[0]) inputs[0].focus();
+    window.etToast(`Verification code sent to ${email} (demo).`);
+    startResendCooldown();
+  }
+
+  function startResendCooldown() {
+    const btn = document.getElementById('resendCodeBtn');
+    let seconds = 30;
+    btn.disabled = true;
+    btn.textContent = `Resend code (${seconds}s)`;
+    clearInterval(resendTimer);
+    resendTimer = setInterval(() => {
+      seconds -= 1;
+      if (seconds <= 0) {
+        clearInterval(resendTimer);
+        btn.disabled = false;
+        btn.textContent = 'Resend code';
+      } else {
+        btn.textContent = `Resend code (${seconds}s)`;
+      }
+    }, 1000);
+  }
+
+  // Auto-advance between the 6 code boxes
+  const codeInputs = Array.from(document.querySelectorAll('#codeRow input'));
+  codeInputs.forEach((input, idx) => {
+    input.addEventListener('input', () => {
+      input.value = input.value.replace(/[^0-9]/g, '').slice(0, 1);
+      if (input.value && idx < codeInputs.length - 1) codeInputs[idx + 1].focus();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !input.value && idx > 0) codeInputs[idx - 1].focus();
+    });
+    input.addEventListener('paste', (e) => {
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+      if (text.length) {
+        e.preventDefault();
+        text.split('').slice(0, codeInputs.length).forEach((ch, i) => { codeInputs[i].value = ch; });
+        codeInputs[Math.min(text.length, codeInputs.length) - 1].focus();
+      }
+    });
+  });
+
+  document.getElementById('resendCodeBtn').addEventListener('click', () => {
+    if (pendingUser) sendVerificationCode(pendingUser.email);
+  });
+  document.getElementById('changeEmailBtn').addEventListener('click', () => {
+    clearInterval(resendTimer);
+    goToStep(1);
+  });
+
+  /* ---------- STEP 1 submit: validate details + captcha, then "send" code ---------- */
+  stepForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const first = document.getElementById('su-first');
+    const last = document.getElementById('su-last');
+    const email = document.getElementById('su-email');
+    const pass = document.getElementById('su-pass');
+    const captchaInput = document.getElementById('su-captcha');
+    const emailErrorEl = document.getElementById('su-email-error');
+
+    [first, last, email, pass, captchaInput].forEach((el) => el.closest('.field').classList.remove('has-error'));
+
+    let valid = true;
+    if (!first.value.trim()) { first.closest('.field').classList.add('has-error'); valid = false; }
+    if (!last.value.trim()) { last.closest('.field').classList.add('has-error'); valid = false; }
+
+    const emailOk = isValidEmail(email.value);
+    if (!emailOk) {
+      const fix = suggestedFix(email.value);
+      emailErrorEl.textContent = fix ? `Did you mean ${fix}?` : 'Enter a valid email address.';
+      email.closest('.field').classList.add('has-error');
+      valid = false;
+    }
+    if (pass.value.length < 6) { pass.closest('.field').classList.add('has-error'); valid = false; }
+
+    const captchaOk = parseInt(captchaInput.value.trim(), 10) === captchaAnswer;
+    if (!captchaOk) {
+      captchaInput.closest('.field').classList.add('has-error');
+      newCaptcha();
+      valid = false;
+    }
+
+    if (!valid) { window.etToast('Check the highlighted fields.'); return; }
+
+    pendingUser = { firstName: first.value.trim(), lastName: last.value.trim(), email: email.value.trim(), joinedAt: Date.now() };
+    goToStep(2);
+    sendVerificationCode(pendingUser.email);
+  });
+
+  /* ---------- STEP 2 submit: verify code, then create the account ---------- */
+  verifyForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const entered = codeInputs.map((i) => i.value).join('');
+    const codeError = document.getElementById('codeError');
+    if (entered.length < 6 || entered !== currentCode) {
+      codeError.style.display = 'block';
+      codeInputs.forEach((i) => i.classList.add('has-error'));
+      window.etToast('Incorrect code — check your inbox and try again.');
+      return;
+    }
+    codeError.style.display = 'none';
+
+    EvertracedAuth.setUser(Object.assign({ emailVerified: true }, pendingUser));
+    window.etToast(`Welcome, ${pendingUser.firstName}! Your email is verified and your account is ready.`);
+    const dest = plan ? `package.html?plan=${plan}` : 'studio.html?type=travel';
+    setTimeout(() => { window.location.href = dest; }, 800);
+  });
+</script>
+<script src="js/polish.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,2730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EVERTRACED – Your Story in Print</title>
+<meta name="description" content="Turn your travel memories into a beautifully printed keepsake book." />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>	
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css" rel="stylesheet"/>	
+<style>
+  /* The frame sequence is visible only through the hero + memories handoff. */
+  .canvas-container {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; opacity: 1; transition: opacity .35s ease;
+  }
+  #scroll-canvas { width: 100%; height: 100%; object-fit: cover; }
+body { background: transparent !important; 
+ }
+	
+#smooth-content {
+  overflow: hidden;
+  width: 100%;
+  /* set a height because the contents are position: absolute, thus natively there's no height */
+  height: auto;
+
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+header, main, footer { position: relative; z-index: 1; }
+  #hero, #memories {
+    background-image: none !important;
+  }
+  #steps, #categories, #ocean, #how, #pricing, #signup, footer {
+    position: relative; z-index: 2;
+  }
+  /* Video scrub animation plays only through the steps + categories handoff.
+     Their old solid gradients are swapped for a dark tint so the clip shows
+     through, the same trick used for #hero/#memories above. */
+  .steps-canvas-container {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    overflow: hidden; opacity: 0; transition: opacity .4s ease;
+    background: #000;
+  }
+  #steps-scroll-canvas {
+    width: 100%; height: 100%; display: block;
+    image-rendering: auto;
+  }
+  /* Soft scrim so the Steps heading and the Categories cards stay readable
+     over the bright sky frames. */
+  .steps-canvas-container .steps-scrim {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(4,16,28,0.30) 0%, rgba(4,16,28,0.18) 50%, rgba(4,16,28,0.34) 100%);
+  }
+
+  /* Ocean → How cinematic frame-sequence scrub (same handoff technique as
+     steps→categories, but a canvas image sequence instead of a video). */
+  .ocean-canvas-container {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    overflow: hidden; opacity: 0; transition: opacity .4s ease;
+    background: #000;
+  }
+  #ocean-scroll-canvas {
+    width: 100%; height: 100%; display: block;
+    image-rendering: auto;
+    filter: contrast(1.06) saturate(1.12) brightness(1.01);
+  }
+  .ocean-canvas-container .ocean-vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgba(4,16,28,0.26), rgba(4,16,28,0.26)), radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.42) 100%);
+    mix-blend-mode: multiply;
+  }
+  .ocean-canvas-container .ocean-grain {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.045; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Let the animated frames show through instead of the old static art. */
+  #ocean { background-image: none !important; }
+
+  /* Pricing → Signup cinematic frame-sequence scrub. Same technique as the
+     ocean handoff, running from the top of #pricing to the bottom of #signup
+     so it ends exactly where the footer begins. */
+  .signup-canvas-container {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    overflow: hidden; opacity: 0; transition: opacity .4s ease;
+    background: #000;
+  }
+  #signup-scroll-canvas {
+    width: 100%; height: 100%; display: block;
+    image-rendering: auto;
+    filter: contrast(1.05) saturate(1.1) brightness(1.01);
+  }
+  /* The footage is bright turquoise, so a soft scrim keeps the pricing cards
+     and the signup form readable on top of it. */
+  .signup-canvas-container .signup-scrim {
+    position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(4,16,28,0.42) 0%, rgba(4,16,28,0.30) 45%, rgba(4,16,28,0.48) 100%);
+  }
+  .signup-canvas-container .signup-vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.42) 100%);
+    mix-blend-mode: multiply;
+  }
+  .signup-canvas-container .signup-grain {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.045; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* Old static pricing art steps aside for the sequence. */
+  #pricing { background-image: none !important; }
+
+/* Container for side cities */
+.hero-nav, .memories-nav {
+  position: relative;
+  z-index: 30;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-links a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  color: #ffffff;
+  font-weight: 600;
+  border-bottom: 2px solid #ffffff;
+  padding-bottom: 2px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-pill {
+  background: #15246b;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  padding: 7px 16px;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.search-pill input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 13px;
+  width: 120px;
+}
+
+.search-pill input::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.search-pill svg {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  background: #15246b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s ease;
+}
+
+.user-avatar:hover {
+  background: #1a2d80;
+}
+
+/* ==========================================================================
+   1. HERO SECTION STYLES
+   ========================================================================== */
+.hero-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+/* Stage containing Window & Side Cities */
+.hero-stage {
+  position: relative;
+  z-index: 15;
+  width: 100%;
+  max-width: 960px;
+  margin: 10px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* City Groups */
+.city-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+}
+
+.city-group.left {
+  left: 155px;
+  top: 180px;	
+  align-items: flex-end;
+}
+
+.city-group.right {
+  right: 180px;
+  top: 355px;	
+  align-items: flex-start;
+}
+
+.city-tag {
+  background: linear-gradient(135deg, #072D69, #1969F5);
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 0 16px rgba(43,140,255,0.55);  color: #ffffff;
+  padding: 7px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.city-tag i {
+  font-size: 11px;
+  color: #ffffff;
+}
+
+.city-tag span {
+  font-family: var(--font-play);
+  font-weight: 500;
+}
+
+.city-tag.offset-left {
+  margin-right: -24px;
+}
+
+.city-tag.offset-right {
+  margin-left: -24px;
+}
+
+/* 3D Airplane Window Frame */
+.badge {
+  position: relative;
+  width: 100%;
+    height: 215px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+    top: 336px;
+	
+}
+
+.window-outer-bezel {
+  width: 100%;
+  height: 100%;
+  border-radius: 80px;
+  padding: 14px;
+  background: linear-gradient(175deg, #ffffff 0%, #e2e8f0 50%, #94a3b8 100%);
+  box-shadow: 
+    0 25px 45px rgba(5, 20, 50, 0.4),
+    inset 0 2px 5px rgba(255, 255, 255, 0.9),
+    inset 0 -4px 6px rgba(71, 85, 105, 0.4);
+}
+
+.window-inner-bezel {
+  width: 100%;
+  height: 100%;
+  border-radius: 68px;
+  padding: 10px;
+  background: linear-gradient(170deg, #dbeafe 0%, #cbd5e1 40%, #94a3b8 100%);
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+.window-glass {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 58px;
+  overflow: hidden;
+  box-shadow: inset 0 0 15px rgba(0, 15, 45, 0.6);
+}
+
+.window-view-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+}
+
+.glass-reflection {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.2) 30%, transparent 45%);
+}
+
+/* Overlapping Price Badge */
+.hero-price-badge {
+  position: absolute;
+  bottom: 60px; 
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  z-index: 25;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.badge-label {
+  background: linear-gradient(135deg, #072D69, #1969F5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 16px rgba(43, 140, 255, 0.55);
+  color: #ffffff;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.badge-prices {
+  background: #ffffff;
+  border-radius: 10px;
+  color: #0f172a;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-prices del {
+  color: #64748b;
+}
+
+.badge-prices strong {
+  color: #020617;
+  font-weight: 900;
+}
+
+/* Hero Typography (Unbroken Headings) */
+.hero-content {
+  position: relative;
+  z-index: 20;
+  text-align: center;
+  max-width: 820px;
+  margin: 230px auto 10px;
+  padding: 0 20px;
+}
+
+.hero-title {
+  font-family: var(--font-play);
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #ffffff;
+  line-height: 1.25;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+  margin-top: 20px;
+}
+
+.script-accent {
+  font-family: var(--font-script);	
+  color: yellow;
+  text-transform: capitalize;
+  font-weight: 400;
+  font-size: 1.35em;
+  letter-spacing: normal;
+	
+  display: inline-block;
+  margin: 0 4px;
+}
+
+.hero-desc {
+  font-family: var(--font-play);
+  font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.65;
+  max-width: 600px;
+  margin: 0px auto 0;
+  letter-spacing: 0.2px;
+}
+
+/* Hero Bottom Bar */
+.hero-bottom-bar {
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 10px 32px 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+/* Scroll Capsule Pill */
+.scroll-capsule-1 {
+  width: 34px;
+  height: 60px;
+  border-radius: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: -20px;
+  margin-right: -45px;
+}	
+.scroll-capsule {
+  width: 34px;
+  height: 60px;
+  border-radius: 40px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-top: -400px;
+  margin-right: -45px;
+}
+.scroll-capsule:hover {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: #ffffff;
+}
+
+.scroll-arrow {
+  animation: bounceDown 1.8s infinite ease-in-out;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(-4px); }
+  50% { transform: translateY(4px); }
+}
+
+/* 3D Floating Hearts */
+.floating-heart {
+  position: absolute;
+  pointer-events: none;
+  filter: drop-shadow(0 15px 25px rgba(234, 88, 12, 0.45));
+}
+
+.heart-top-right {
+  top: 17%;
+  right: 14%;
+  width: 125px;
+  height: 125px;
+  transform: rotate(18deg);
+  animation: floatHeart 4s infinite ease-in-out;
+}
+
+.heart-bottom-left {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  transform: rotate(-16deg);
+  animation: floatHeart 4.5s infinite ease-in-out 1s;
+}
+
+@keyframes floatHeart {
+  0%, 100% { transform: translateY(0) rotate(18deg); }
+  50% { transform: translateY(-14px) rotate(14deg); }
+}
+	
+.memories-section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+/* Memories Center Brand in Header */
+.center-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.brand-text {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+
+.brand-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  background: #e11d48;
+  display: inline-block;
+}
+
+.brand-slogan {
+  display: block;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+}
+
+/* Wing Floating Heart */
+.heart-memories-wing {
+  top: 18%;
+  left: 12%;
+  width: 125px;
+  height: 125px;
+  transform: rotate(-18deg);
+  animation: floatHeart 4.2s infinite ease-in-out 0.5s;
+}
+
+/* Central Typography */
+.memories-center-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 585px 20px;
+}
+.lead {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font-script);	
+  text-align: center;
+  letter-spacing: 0.22em;
+  color: yellow;
+  text-transform: uppercase;
+  margin-top: -130px;	
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.memories-lead {
+  font-size: 24px;
+  font-weight: 400;
+  margin-left: -45vh;	
+  letter-spacing: 0.22em;
+  color: #ffffff;
+  margin-top: 130px;	
+  text-transform: uppercase;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.memories-script {
+  font-family: var(--font-script);
+  font-size: clamp(4.5rem, 9.5vw, 8rem);
+  font-weight: 500;
+  color: #ffffff;
+  line-height: 0.95;
+  color: yellow;
+  margin: -10px 0;
+  text-shadow: 0 6px 22px rgba(0, 0, 0, 0.4);
+}
+
+.memories-sub {
+  font-size: 24px;
+  font-weight: 400;
+  margin-left: 55vh;
+  letter-spacing: 0.22em;
+  color: #ffffff;
+  text-transform: uppercase;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.memories-bottom-bar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 30px;
+}
+
+/* ==========================================================================
+   RESPONSIVE (MOBILE & TABLET)
+   ========================================================================== */
+@media (max-width: 860px) {
+  .city-group {
+    display: none; /* Hide side floating pills on mobile to prevent overlapping */
+  }
+
+  .heart-top-right, .heart-memories-wing {
+    width: 80px;
+    height: 80px;
+  }
+
+  .airplane-window-wrapper {
+    width: 220px;
+    height: 290px;
+  }
+
+  .center-brand {
+    display: none;
+  }
+}	
+ 
+#steps { min-height: 110vh; top: -15vh; padding: 100px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #steps .tag { background: var(--yellow); color: #222; font-size: .7rem; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-bottom: 16px; text-transform: uppercase; }
+  #steps h2 { font-size: clamp(1.5rem,3.5vw,2.6rem); font-weight: 400; line-height: 1.3; max-width: 680px; }
+  #steps h2 .script { font-size: 1.35em; font-family: var(--font-script); color: yellow;}
+  .parachute-wrap { margin-top: 50px; display: flex; justify-content: center; position: relative; }
+  /* Keep the falling parachute behind the actual content (text, cards, form)
+     of the sections it passes over, while still staying above each
+     section's own background image/color. */
+  #steps .tag, #steps h2, #steps .steps-price, #steps .para-text,
+  #categories h2, #categories .cards-grid,
+  #ocean .ocean-content,
+  #how .eyebrow, #how h2, #how .steps-row, #how > a,
+  #pricing h2, #pricing p, #pricing .pricing-cards,
+  #signup h2, #signup .stage {
+    position: relative;
+    z-index: 5;
+  }
+  /* Ship removed — ocean now shows the animated frame sequence instead. */
+  .steps-price { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; width: 100%; }
+  .steps-price .label {font-size: 0.8rem; background: #941B66; color: white; text-transform: uppercase; letter-spacing: 0px; border-radius: 10px; padding: 6px 16px; text-align: right; width: fit-content; position: absolute; }
+  .steps-price .badge { background: var(--white); border-radius: 20px; font-size: .85rem; font-weight: 700; color: black;  width: 90px; height: 25px; margin-left: auto; margin-top: -307px;
+}
+@media (max-width: 768px) {
+  .steps-price {
+    align-items: flex-end;
+  }
+}	
+  .parachute-svg { width: min(65vw, 480px); filter: drop-shadow(0 20px 25px rgba(0,0,0,0.35)); }
+  .para-text { top: 30vh; font-family: var(--font-script); font-size: clamp(2rem, 6vw, 3.6rem); color: yellow; text-shadow: 0 4px 24px rgba(0,188,212,0.6); }
+
+  #categories { height: 107vh; padding: 90px 24px; text-align: center; }
+  #categories h2 { color: white; font-size: clamp(1.8rem, 4.5vw, 2.8rem); font-weight: 500; line-height: 1.3; }
+  #categories h2 strong { font-weight: 700; font-family: var(--font-script); }
+  .cards-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; margin-top: 46px; }
+  .edition-card { background: linear-gradient(135deg, rgba(65, 115, 150, 0.55), rgba(20, 55, 85, 0.65));
+	backdrop-filter: blur(18px);
+-webkit-backdrop-filter: blur(18px);
+	border: 1px solid rgba(255,255,255,0.35);
+    box-shadow:
+      0 14px 0 -4px var(--berry-deep),
+      0 22px 40px rgba(6,12,30,0.35);
+	  border-radius: 20px; padding: 16px 14px 14px; text-align: left; cursor: pointer; transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s cubic-bezier(.22,1,.36,1); text-decoration: none; display: block; border-top: 5px solid #1969F5; backface-visibility: hidden; transition: 0.5s;}
+  .edition-card:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.35); margin-top: -5px; }
+  .card-title {font-size: 20px; margin-top: 29px; font-weight: 700; color: #FFFD00; line-height: 1.2;  }
+  .card-cta { font-size: 11px; font-weight: 500; color: #fff; margin: 0 0 10px; display: flex; align-items: center; gap: 3px; }
+  .card-cta span { color: #FFE44D; }
+  .card-footer {margin-top: 30px; background: linear-gradient(135deg, #072D69, #1969F5);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 0 16px rgba(43,140,255,0.55); border-radius: 12px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
+  .card-num { font-size: 20px; font-weight: 800; color: white; line-height: 1; }
+  .card-pages { font-size: 10px; font-weight: 600; color: white; line-height: 1.3; }
+
+  #ocean {scroll-behavior: smooth; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 90px 24px; text-align: center; background-image: url("assets/img/tsunami.png"); background-size: cover; background-position: center; }
+  .ship-wrap { width: 100%; max-width: 320px; margin: 30px auto 0; }
+  .ocean-content h2 { font-size: clamp(1.7rem,4vw,3rem); font-weight: 600; line-height: 1.2; }
+  .ocean-content h2 .script { font-size: 1.25em; font-family: var(--font-script); }
+  .ocean-content p { color: rgba(255,255,255,0.65); font-size: .9rem; max-width: 400px; margin: 12px auto 0; }
+  .wave-rings { position: relative; height: 90px; margin-top: 20px; }
+  .water-ring { position: absolute; top: 0; left: 50%; width: 60px; height: 60px; margin-left: -30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); animation: expandRing 3s ease-out infinite; }
+  .water-ring:nth-child(2) { animation-delay: 1s;} 
+  .water-ring:nth-child(3) { animation-delay: 2s; }
+  @keyframes expandRing { 0% { width: 60px; height: 60px; opacity: .5; margin-left: -30px; } 100% { width: 280px; height: 280px; opacity: 0; margin-left: -140px; } }
+
+  #how { padding: 90px 24px; text-align: center; height: 100vh; }
+  #how .eyebrow { color: var(--yellow); font-weight: 900; font-family: var(--font-script); font-size: 18px;	 }
+  #how h2 { font-size: clamp(1.4rem,3vw,2rem); font-weight: 600; margin-bottom: 44px; color: var(--white); }
+  .steps-row { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; max-width: 900px; margin: 0 auto; }
+  .step-card { background: linear-gradient(135deg, rgba(65, 115, 150, 0.55), rgba(20, 55, 85, 0.65));
+	backdrop-filter: blur(18px);
+-webkit-backdrop-filter: blur(18px);
+	border: 1px solid rgba(255,255,255,0.35);
+    box-shadow:
+      0 14px 0 -4px var(--berry-deep),
+      0 22px 40px rgba(6,12,30,0.35); border-radius: 20px; padding: 28px 22px; flex: 1 1 220px; max-width: 260px; transition: transform .3s, box-shadow .3s; text-align: center; }
+  .step-card:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,188,212,0.2); }
+  .step-title { font-size: 1.05rem; font-weight: 700; margin: 8px 0; color: #fff; }
+  .step-desc { font-size: .82rem; color: #fff0f7; line-height: 1.6; }
+	#pricing{ background-size: cover; background-position: center; background-repeat: no-repeat;}
+  #pricing, #signup { padding: 85px 24px; text-align: center;  }
+  #pricing h2 { font-size: clamp(1.5rem,3vw,2.2rem); font-family: var(--font-play); font-weight: 600; font-style: normal; margin-bottom: 50px; }
+  #pricing > p { color: rgba(255,255,255,0.6); margin-bottom: 40px; font-size: .9rem; }
+  .pricing-cards { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; }
+  .price-card { background: linear-gradient(135deg, rgba(65, 115, 150, 0.55), rgba(20, 55, 85, 0.65));
+	backdrop-filter: blur(18px);
+-webkit-backdrop-filter: blur(18px);
+	border: 1px solid rgba(255,255,255,0.35);
+    box-shadow:
+      0 14px 0 -4px var(--berry-deep),
+      0 22px 40px rgba(6,12,30,0.35); border-radius: 20px; padding: 34px 28px; flex: 1 1 260px; max-width: 300px; transition: transform .3s; position: relative; text-align: left; }
+  .price-card.popular { }
+  .popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #072D69, #1969F5);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 0 16px rgba(43,140,255,0.55); color: white; font-size: .7rem; font-weight: 700; padding: 4px 16px; border-radius: 20px; text-transform: uppercase; }
+  .price-card:hover { transform: translateY(-6px); }
+  .price-card h3 { text-align: center; font-size: 1.1rem; font-weight: 700; font-family: var(--font-play); margin-bottom: 0px; margin-top: 5px; width: 123%; height: 30px; color: yellow; margin-left: -28px; border-top-right-radius: 30px; border-top-left-radius: 30px; }
+  
+  .price-card .amount { margin-left: -28px; font-size: 3rem; font-weight: 900; color: white; width: 123%; text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;}
+  .price-card .amount sup { font-size: 1.3rem; vertical-align: super; }
+  .price-card ul { list-style: none; margin: 16px 0; }
+  .price-card ul li { font-size: .82rem; color: white; font-weight: 700; padding: 5px 0; display: flex; align-items: center; gap: 8px; }
+  .price-card ul li::before { content: '✓'; color: white; font-weight: 700; }
+  .price-card i{color: yellow; font-size: 16px; font-weight: 900; }
+ 
+/* cards area */
+	
+.stage{ position:relative; z-index:4; max-width:80%; margin:0 auto; padding:0 24px; display:grid; grid-template-columns:1fr 40px 1fr; align-items:stretch; }
+	
+  @media (max-width:840px){
+    .stage{grid-template-columns:1fr; max-width:480px; row-gap:24px;}
+  }
+.divider{width:2px; justify-self:center; align-self:stretch; margin:16px 0; background:linear-gradient(to bottom, transparent, rgba(15,30,74,0.35), transparent); }
+  @media (max-width:840px){
+    .divider{display:none;}
+  }
+.card{ border-radius:22px;
+	padding:30px 30px 26px;
+	background: linear-gradient(135deg, rgba(65, 115, 150, 0.55), rgba(20, 55, 85, 0.65));
+	backdrop-filter: blur(18px);
+-webkit-backdrop-filter: blur(18px);
+	border: 1px solid rgba(255,255,255,0.35);
+    box-shadow:
+      0 14px 0 -4px var(--berry-deep),
+      0 22px 40px rgba(6,12,30,0.35); position:relative;}
+	
+  .card h2{ font-family:var(--font-display); font-weight:300; font-size:22px; color:#FFFFFF; margin:0 0 20px; }
+
+  .field{ margin-bottom:14px; }
+	  
+  .field label{ display:block; font-size:11px; font-weight:700; color:#F4F4F4; text-transform:capitalize; letter-spacing:0.08em; margin-bottom:6px; font-family: var(--font-play);}
+  .field input{ width:100%; border:none; border-radius:9px; background:rgba(255, 255, 255, 0.12); padding:13px 14px; font-family:var(--font-body); font-size:14px; color:black; outline:none; transition:box-shadow .25s ease, transform .25s ease, background .25s ease; }
+  .field input:focus{ box-shadow:0 0 0 3px rgba(200,16,74,0.35); background:#fffdf8; }
+
+  .form-footer{ display:flex; align-items:center; justify-content:space-between; margin-top:18px; gap:12px; flex-wrap:wrap; }
+  .form-footer p{ font-size:12px; color: white; margin:0; line-height:1.4; }
+  .form-footer a{ color: white; font-weight:700; text-decoration:none; }
+
+  .btn{ cursor:pointer; font-family:var(--font-body); font-weight:700; font-size:14px; border-radius:999px; padding:13px 26px; display:inline-flex; align-items:center; gap:8px;
+ background: linear-gradient(135deg, #072D69, #1969F5);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 0 16px rgba(43,140,255,0.55);
+    transition: all 0.3s ease;
+	color: #fff;}
+  
+  .btn:hover{  
+	  background: linear-gradient(135deg, #0A3D85 0%, #2B8CFF 100%);
+	  box-shadow:
+        0 8px 24px rgba(25, 105, 245, 0.45),
+        0 0 20px rgba(43, 140, 255, 0.65);
+      transform: translateY(-2px);
+	}
+  .btn:active{ transform:translateY(1px); box-shadow:0 4px 0 -1px var(--berry-deep), 0 8px 14px rgba(156,11,57,0.4); }
+  .btn svg{width:14px; height:14px;}
+
+  /* quick signup buttons */
+  .quick-list{ display:flex; flex-direction:column; gap:12px; margin-top: -25px; }
+  .quick-btn{ display:flex; align-items:center; gap:12px; width:100%; background:#efe9db; border:none; border-radius:10px; padding:13px 16px; font-family:var(--font-body); font-weight:700; font-size:13.5px; color: black; cursor:pointer; text-align:left; position:relative; transition:background .2s ease, transform .2s ease, box-shadow .2s ease; }
+  .quick-btn:hover{ background:#fffdf8; transform:translateY(-2px); box-shadow:0 8px 16px rgba(15,30,74,0.18); }
+  .quick-btn .icon{ width:26px ;height:26px; border-radius:6px; display:flex;align-items:center;justify-content:center; flex-shrink:0; }
+  .quick-btn .arrow{ margin-left:auto; opacity:0.55; transition:transform .2s ease, opacity .2s ease; }
+  .quick-btn:hover .arrow{ transform:translate(2px,-2px); opacity:0.9; }
+  .fine-print{ font-size:10.5px; color:white; line-height:1.5; margin-top: 30px; }
+  .fine-print a{color:var(--berry); text-decoration:none; font-weight:700;}
+	
+  /* ==========================================================================
+     RESPONSIVE — xl (default, >=1200px) / lg / md / sm / xs
+     ========================================================================== */
+
+  /* ---------- lg: <=1199.98px ---------- */
+  @media (max-width: 1199.98px) {
+    .stage { max-width: 620px; }
+    .cards-grid { gap: 16px; }
+    .pricing-cards, .steps-row { max-width: 760px; }
+  }
+
+  /* ---------- md: <=991.98px ---------- */
+  @media (max-width: 991.98px) {
+    #hero { padding: 100px 20px 70px; }
+    .hero-window-wrap { width: 260px; }
+    .hero-window-stage { width: 210px; height: 245px; }
+    .window-side.left { left: -64px; }
+    .window-side.right { right: -30px; }
+
+    #memories, #ocean { padding: 70px 20px; }
+    #steps { padding: 80px 20px; }
+    #categories { height: auto; min-height: 100vh; padding: 70px 20px; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); height: auto; }
+    .edition-card { padding: 16px 14px 12px; }
+    .card-title { margin-top: 18px; }
+
+    .steps-row { gap: 18px; }
+    .step-card { flex: 1 1 200px; }
+
+    .pricing-cards { gap: 18px; }
+    .price-card { flex: 1 1 240px; }
+
+    .stage { grid-template-columns: 1fr; max-width: 480px; row-gap: 24px; }
+    .divider { display: none; }
+  }
+
+  /* ---------- sm: <=767.98px ---------- */
+  @media (max-width: 767.98px) {
+    #hero { padding: 90px 16px 60px; }
+    .hero-title { padding: 0 6px; }
+    .hero-sub { padding: 0 10px; }
+
+    .hero-window-wrap { width: 220px; margin-bottom: 20px; }
+    .hero-window-stage { width: 180px; height: 210px; }
+    .hero-window { border-radius: 55px; }
+    .window-side.left { left: -50px; gap: 6px; }
+    .window-side.right { right: -14px; gap: 6px; }
+    .window-side .win-option { font-size: .62rem; padding: 4px 8px; }
+    .window-side.left .win-option { transform: translateX(28px); }
+    .window-side.right .win-option { transform: translateX(-28px); }
+
+    #memories, #steps, #ocean, #how, #pricing, #signup, #categories { padding-left: 16px; padding-right: 16px; }
+    .memories-inner p, .ocean-content p { max-width: 100%; }
+
+    .steps-price { align-items: center; }
+    .steps-price .label { text-align: center; }
+    .steps-price .badge { margin: 0 auto; }
+
+    .parachute-svg { width: min(72vw, 380px); }
+
+    .cards-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .card-title { font-size: 17px; margin-top: 14px; }
+
+    .ship-wrap { max-width: 240px; }
+
+    .steps-row { flex-direction: column; align-items: stretch; max-width: 340px; }
+    .step-card { max-width: 100%; }
+
+    .pricing-cards { flex-direction: column; align-items: center; }
+    .price-card { width: 100%; max-width: 340px; }
+
+    .stage { max-width: 100%; }
+    .card { padding: 24px 20px 22px; }
+    .form-footer { justify-content: center; text-align: center; }
+    .form-footer p { text-align: center; width: 100%; }
+  }
+
+  /* ---------- xs: <=575.98px ---------- */
+  @media (max-width: 575.98px) {
+    .balloon { font-size: 1.6rem; }
+
+    .hero-window-wrap { width: 200px; }
+    .hero-window-stage { width: 165px; height: 195px; }
+    .window-side.left { left: -42px; }
+    .window-side.right { right: -8px; }
+
+    .cards-grid { grid-template-columns: 1fr; }
+    .card-cta { margin-bottom: 8px; }
+
+    .price-card .amount { font-size: 2.4rem; }
+    .parachute-svg { width: min(78vw, 300px); }
+
+    .quick-btn { font-size: 12.5px; padding: 12px 14px; }
+    .fine-print { font-size: 10px; }
+  }
+
+  @media (max-width: 380px) {
+    .hero-window-wrap { width: 190px; }
+    .hero-window-stage { width: 150px; height: 180px; }
+    .window-side.left { left: -34px; }
+    .window-side.right { right: -2px; }
+    .window-side .win-option { font-size: .58rem; padding: 3px 6px; }
+  }
+
+
+  /* ========================================================================
+     FINAL RESPONSIVE OVERRIDES
+     Desktop layout is intentionally untouched. These rules only change
+     sizing/flow on tablet and mobile so the existing composition is preserved.
+     ======================================================================== */
+
+  *, *::before, *::after { min-width: 0; }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  img, canvas, video, svg { max-width: 100%; }
+
+  @media (max-width: 991.98px) {
+    /* Header */
+    header { padding-left: 16px; padding-right: 16px; }
+    .nav-right { flex-shrink: 0; }
+
+    /* Hero */
+    #hero {
+      min-height: 100svh;
+      height: auto;
+      padding: 82px 16px 28px;
+      justify-content: center;
+    }
+    .hero-stage {
+      max-width: 100%;
+      margin: 0 auto;
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+    .hero-section .badge {
+      top: 0;
+      width: min(92vw, 760px);
+      height: auto;
+      min-height: 0;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .hero-content {
+      width: 100%;
+      max-width: 760px;
+      margin: 18vh auto 0;
+      padding: 0 18px;
+    }
+    .hero-title {
+      font-size: clamp(1.55rem, 4.7vw, 2.35rem);
+      line-height: 1.2;
+      letter-spacing: .035em;
+    }
+    .hero-desc {
+      max-width: 640px;
+      font-size: clamp(.78rem, 1.7vw, .92rem);
+    }
+    .hero-price-badge {
+      bottom: auto;
+      top: calc(18vh + 120px);
+      max-width: calc(100% - 32px);
+    }
+    .hero-bottom-bar {
+      padding: 18px 0 8px;
+      align-items: center;
+    }
+    .scroll-capsule-1 {
+      margin: 0;
+	  margin-right: 24vh;
+	  margin-top: -10vh;	
+    }
+    .heart-bottom-left {
+      width: clamp(70px, 12vw, 100px);
+      height: clamp(70px, 12vw, 100px);
+    }
+
+    /* Memories */
+    #memories {
+      min-height: 100svh;
+      height: auto;
+      padding: 0 16px;
+      justify-content: center;
+    }
+    .memories-center-content {
+      width: 100%;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .lead,
+    .memories-lead,
+    .memories-sub {
+      margin-left: 0;
+      margin-top: 0;
+      text-align: center;
+    }
+    .lead { font-size: clamp(18px, 4vw, 24px); margin-bottom: 12px; }
+    .memories-lead { font-size: clamp(16px, 3.5vw, 24px); }
+    .memories-script { font-size: clamp(4rem, 15vw, 7rem); margin: 0; }
+    .memories-sub { font-size: clamp(15px, 3.5vw, 24px); }
+    .memories-bottom-bar { padding: 18px 0 24px; }
+    .scroll-capsule { margin: 0; }
+
+    /* Steps */
+    #steps {
+      min-height: 110svh;
+      height: auto;
+      padding: 76px 20px;
+    }
+    #steps h2 { max-width: 680px; }
+    .steps-price {
+      position: relative;
+      width: min(100%, 420px);
+      margin: 30px auto 0;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .steps-price .label {
+      position: static;
+      width: fit-content;
+      max-width: 100%;
+      text-align: center;
+    }
+    .steps-price .badge {
+      width: auto;
+      height: auto;
+      margin: 0;
+      padding: 6px 14px;
+      position: static;
+    }
+    .para-text { margin-top: 26px; }
+
+    /* Categories */
+    #categories {
+      min-height: 100svh;
+      height: auto;
+      padding: 76px 20px;
+    }
+    .cards-grid {
+      width: 100%;
+      max-width: 820px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .edition-card { min-width: 0; }
+
+    /* Ocean */
+    #ocean {
+      min-height: 100svh;
+      height: auto;
+      padding: 76px 20px;
+      justify-content: center;
+    }
+    .ocean-content { width: min(100%, 620px); }
+    .ocean-content h2 { font-size: clamp(1.7rem, 5vw, 2.7rem); }
+    .ocean-content p { max-width: 520px; }
+
+    /* How it works */
+    #how {
+      min-height: 100svh;
+      height: auto;
+      padding: 76px 20px;
+    }
+    .steps-row {
+      width: 100%;
+      max-width: 820px;
+    }
+
+    /* Pricing */
+    #pricing {
+      min-height: 100svh;
+      height: auto;
+      padding: 76px 20px;
+    }
+    .pricing-cards {
+      width: 100%;
+      max-width: 820px;
+    }
+    .price-card {
+      min-width: 0;
+      overflow: visible;
+    }
+    .price-card h3,
+    .price-card .amount,
+    .price-card > p {
+      width: 100% !important;
+      margin-left: 0 !important;
+    }
+    .price-card h3 { border-radius: 22px 22px 0 0; }
+    .price-card .amount { border-radius: 0 0 22px 22px; }
+
+    /* Signup */
+    #signup {
+      min-height: 100svh;
+      height: auto;
+      padding: 76px 20px 70px;
+    }
+    #signup > h2 {
+      font-size: clamp(1.35rem, 4vw, 2rem) !important;
+      line-height: 1.25;
+      margin-bottom: 28px;
+    }
+    .stage {
+      width: 100%;
+      max-width: 760px;
+      padding: 0;
+      grid-template-columns: 1fr;
+      row-gap: 20px;
+    }
+    .stage .divider { display: none; }
+    .card { width: 100%; }
+  }
+
+  @media (max-width: 767.98px) {
+    /* Hero: keep the same visual hierarchy without fixed desktop offsets. */
+    #hero { padding: 74px 12px 22px; }
+    .hero-stage { width: 100%; }
+    .hero-section .badge { width: 100%; margin-top: -43px; }
+    .hero-content {
+      margin-top: 13vh;
+      padding: 0 10px;
+    }
+    .hero-title {
+      font-size: clamp(1.25rem, 6.2vw, 1.9rem);
+      line-height: 1.18;
+      letter-spacing: .02em;
+    }
+    .script-accent { margin: 0 2px; }
+    .hero-desc {
+      font-size: .76rem;
+      line-height: 1.55;
+      max-width: 500px;
+    }
+    .hero-price-badge {
+      top: calc(13vh + 112px);
+      font-size: 11px;
+    }
+    .badge-label,
+    .badge-prices { padding: 7px 12px; font-size: 11px; }
+    .heart-top-right {
+  	  top: 7%;
+      right: -3%;
+      width: 13vh;
+      height: 62px;
+    }
+    .heart-bottom-left { width: 13vh; height: 68px; }
+
+    /* Memories */
+    #memories { padding: 0 14px; }
+    .memories-center-content { transform: translateY(-2vh); }
+    .memories-script { font-size: clamp(3.6rem, 18vw, 6rem); }
+
+    /* Steps */
+    #steps { padding: 70px 16px; }
+    #steps h2 { font-size: clamp(1.35rem, 9vw, 2rem); }
+    .steps-price { margin-top: 24px; }
+    .steps-price .label { font-size: .68rem; padding: 6px 12px; }
+    .steps-price .badge { font-size: .8rem; }
+    .parachute-svg { width: min(78vw, 330px); }
+
+    /* Category cards become a single column at phone width. */
+    #categories { padding: 70px 16px; }
+    #categories h2 { font-size: clamp(1.55rem, 7vw, 2.2rem); }
+    .cards-grid {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      max-width: 430px;
+      margin-top: 34px;
+	  margin-left: 0px;	
+    }
+    .edition-card { padding: 16px; }
+    .card-title { font-size: 18px; }
+    .card-footer { margin-top: 22px; }
+
+    /* Ocean */
+    #ocean { padding: 70px 16px; }
+    .ocean-content h2 { font-size: clamp(1.6rem, 8vw, 2.4rem); }
+    .ocean-content p { font-size: .8rem; line-height: 1.55; }
+
+    /* How */
+    #how { padding: 70px 16px; }
+    #how h2 { margin-bottom: 30px; font-size: clamp(1.35rem, 6vw, 2rem); }
+    .steps-row { flex-direction: column; align-items: stretch; gap: 14px; max-width: 430px; }
+    .step-card { max-width: none; padding: 24px 20px; }
+    #how > a.btn { width: min(100%, 145px); }
+
+    /* Pricing */
+    #pricing { padding: 70px 16px; }
+    #pricing h2 { margin-bottom: 28px; font-size: clamp(1.4rem, 6vw, 2rem); }
+    #pricing > p { margin-bottom: 30px; }
+    .pricing-cards { flex-direction: column; align-items: center; gap: 18px; }
+    .price-card { width: min(100%, 430px); max-width: 430px; padding: 30px 22px 26px; }
+    .price-card h3 { height: auto; min-height: 30px; padding: 5px 8px; }
+    .price-card > p { padding: 2px 8px; }
+    .price-card .amount { font-size: clamp(2.35rem, 11vw, 3rem); padding-bottom: 4px; }
+
+    /* Signup */
+    #signup { padding: 70px 14px 60px; }
+    .stage { max-width: 430px; }
+    .card { padding: 22px 18px 20px; border-radius: 18px; }
+    .card h2 { font-size: 20px; }
+    .form-footer { flex-direction: column; align-items: stretch; }
+    .form-footer p { width: 100%; text-align: center; }
+    .form-footer .btn { width: 100%; justify-content: center; }
+    .quick-btn { min-height: 48px; }
+  }
+
+  @media (max-width: 575.98px) {
+    /* Prevent any text/button from forcing a horizontal scroll. */
+    .hero-title,
+    .hero-desc,
+    .memories-lead,
+    .memories-script,
+    .memories-sub,
+    #steps h2,
+    #categories h2,
+    #pricing h2,
+    #signup > h2 { overflow-wrap: anywhere; }
+
+    #hero { min-height: 100svh; padding-top: 68px; }
+    .hero-content { margin-top: 67vh; }
+    .hero-price-badge {
+      top: calc(52vh + 105px);
+      max-width: calc(100% - 22px);
+    }
+    .badge-label,
+    .badge-prices { padding: 6px 9px; font-size: 10px; }
+    .hero-bottom-bar { padding-bottom: 4px; }
+
+    #memories { min-height: 100svh; }
+    .lead { font-size: 17px; }
+    .memories-lead { font-size: 40px; letter-spacing: .16em; }
+    .memories-script { font-size: clamp(3.2rem, 20vw, 5rem); }
+    .memories-sub { font-size: 40px; letter-spacing: .16em; }
+
+    #steps,
+    #categories,
+    #ocean,
+    #how,
+    #pricing,
+    #signup { padding-left: 14px; padding-right: 14px; }
+
+    .steps-price { width: 100%; }
+    .steps-price .label { max-width: 100%; }
+    .para-text { font-size: clamp(1.8rem, 12vw, 2.8rem); }
+
+    .edition-card { border-top-width: 4px; }
+    .card-footer { padding: 8px 9px; }
+
+    .ship-wrap { width: min(62vw, 220px); max-width: 220px; }
+    .wave-rings { transform: scale(.82); transform-origin: center top; }
+
+    .price-card { width: 100%; }
+    .price-card ul li { font-size: .78rem; }
+
+    .card { padding: 20px 16px 18px; }
+    .quick-btn { padding: 11px 12px; font-size: 12px; }
+  }
+
+  @media (max-width: 380px) {
+    #hero { padding-left: 8px; padding-right: 8px; }
+    .hero-title { font-size: 1.12rem; }
+    .hero-desc { font-size: .7rem; }
+    .hero-price-badge { transform: translateX(-50%) scale(.92); margin-top: 30vh; }
+    .heart-top-right { width: 52px; height: 52px; }
+    .heart-bottom-left { width: 58px; height: 58px; }
+    .memories-script { font-size: 4rem; }
+    .steps-price .label { font-size: .62rem; }
+  }
+
+
+
+  /* ------------------------------------------------------------------------
+     500px × 605px hero fix
+     Keep the desktop composition unchanged. On compact portrait screens,
+     the CTA was colliding with the description because the original desktop
+     offsets were still influencing the absolutely-positioned price badge.
+     ------------------------------------------------------------------------ */
+  @media (min-width: 481px) and (max-width: 540px) and (max-height: 680px) {
+    #hero {
+      min-height: 605px;
+      height: 605px;
+      padding: 68px 10px 16px;
+      justify-content: space-between;
+    }
+
+    .hero-stage {
+      width: 100%;
+      height: 465px;
+      min-height: 465px;
+      flex: 0 0 465px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .hero-section .badge {
+      width: 100%;
+      height: 465px;
+      min-height: 465px;
+      top: 0;
+      display: block;
+    }
+
+    .hero-content {
+      width: 100%;
+      max-width: 480px;
+      margin: 395px auto 0;
+      padding: 0 8px;
+    }
+
+    .hero-title {
+      font-size: clamp(1.45rem, 6vw, 1.75rem);
+      line-height: 1.18;
+      letter-spacing: .01em;
+    }
+
+    .script-accent {
+      font-size: 1.28em;
+      margin: 0 2px;
+    }
+
+    .hero-desc {
+      max-width: 460px;
+      margin-top: 7px;
+      font-size: .73rem;
+      line-height: 1.55;
+    }
+
+    .hero-price-badge {
+      top: auto;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .badge-label,
+    .badge-prices {
+      padding: 7px 11px;
+      font-size: 10.5px;
+    }
+
+    .heart-top-right {
+      top: 20%;
+      right: 4%;
+      width: 58px;
+      height: 58px;
+    }
+
+    .hero-bottom-bar {
+      padding: 0;
+      min-height: 44px;
+      align-items: flex-end;
+    }
+
+    .heart-bottom-left {
+      width: 62px;
+      height: 62px;
+    }
+
+    .scroll-capsule-1 {
+      width: 35px;
+      height: 45px;
+      margin: 0 0 50px 0;
+    }
+  }
+
+
+/* Hero capsule: static (no bouncing arrow) */
+.scroll-capsule-1 .scroll-arrow { animation: none; }
+
+/* Memories capsule: smoke-puff effect on click */
+.smoke-puff {
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.85) 0%, rgba(225,230,240,.45) 45%, rgba(200,208,225,0) 72%);
+  filter: blur(7px);
+  will-change: transform, opacity;
+}
+.scroll-capsule.is-smoking { pointer-events: none; }
+
+/* Hero capsule: fixed in one spot on screen (never moves up/down). Arrow flips up after scrolling down = back to home */
+.scroll-capsule-1 {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 28px !important;
+  top: auto !important;
+  left: auto !important;
+  margin: 0 !important;
+  z-index: 9999 !important;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.scroll-capsule-1 .scroll-arrow { transition: transform .35s ease; }
+.scroll-capsule-1.is-up .scroll-arrow { transform: rotate(180deg); }
+
+/* ==========================================================================
+   ALL YELLOW TEXT -> one bold-italic brush script (same as hero "Evertraced")
+   Header & footer are intentionally left untouched.
+   ========================================================================== */
+:root { --yellow-font: 'Dancing Script', 'Brush Script MT', cursive; }
+.script-accent,
+.lead,
+.memories-script,
+#steps h2 .script,
+.para-text,
+.card-title,
+.ocean-content h2 .script,
+#how .eyebrow,
+.step-num,
+.price-card h3,
+main .script {
+  font-family: var(--yellow-font) !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   EDITION CARDS: title + CTA on the left (bigger), number + pages stacked
+   vertically in a blue panel on the right
+   ========================================================================== */
+#categories .edition-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr 1fr;
+  column-gap: 20px;
+  align-items: center;
+  padding: 18px 18px 18px 28px;
+  min-height: 190px;
+}
+#categories .card-title {
+  grid-column: 1; grid-row: 1;
+  align-self: end;
+  margin: 0 0 6px;
+  font-size: 40px;
+  line-height: 1.15;
+  text-align: left;
+}
+#categories .card-cta {
+  grid-column: 1; grid-row: 2;
+  align-self: start;
+  margin: 0;
+  font-size: 17px;
+  gap: 6px;
+  text-align: left;
+}
+#categories .card-footer {
+  grid-column: 2; grid-row: 1 / span 2;
+  align-self: stretch;
+  margin: 0;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  min-width: 130px;
+  padding: 12px 18px;
+}
+#categories .card-num { font-size: 44px; }
+#categories .card-pages { font-size: 15px; line-height: 1.35; }
+
+@media (max-width: 991.98px) {
+  #categories .card-title { font-size: 32px; }
+  #categories .card-cta { font-size: 15px; }
+  #categories .card-num { font-size: 36px; }
+  #categories .card-pages { font-size: 13px; }
+  #categories .card-footer { min-width: 105px; }
+}
+@media (max-width: 600px) {
+  #categories .edition-card { min-height: 0; padding: 14px 12px 14px 16px; column-gap: 10px; }
+  #categories .card-title { font-size: 22px; }
+  #categories .card-cta { font-size: 12px; }
+  #categories .card-num { font-size: 26px; }
+  #categories .card-pages { font-size: 11px; }
+  #categories .card-footer { min-width: 74px; padding: 8px 10px; }
+}
+
+/* ==========================================================================
+   GLASS CARDS — reference "Create Your Account" card style
+   Applies to: edition cards (#categories), step cards (#how),
+   price cards (#pricing) and the sign-up cards (#signup).
+   Hero / memories sections are intentionally NOT touched.
+   ========================================================================== */
+:root {
+  --glass-fill: linear-gradient(145deg, rgba(24, 92, 166, 0.52) 0%, rgba(9, 45, 98, 0.62) 55%, rgba(6, 31, 74, 0.72) 100%);
+  --glass-edge: rgba(125, 208, 255, 0.78);
+  --glass-shadow:
+    0 0 0 5px rgba(20, 110, 210, 0.16),
+    0 0 0 6px rgba(90, 200, 255, 0.55),
+    0 0 30px 4px rgba(40, 160, 255, 0.42),
+    0 26px 48px rgba(2, 12, 40, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 30px rgba(110, 190, 255, 0.14),
+    inset 0 -20px 34px rgba(0, 20, 70, 0.25);
+  --glass-shadow-hover:
+    0 0 0 5px rgba(30, 130, 235, 0.22),
+    0 0 0 6px rgba(120, 215, 255, 0.8),
+    0 0 44px 8px rgba(50, 175, 255, 0.55),
+    0 30px 56px rgba(2, 12, 40, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 0 34px rgba(120, 200, 255, 0.2),
+    inset 0 -20px 34px rgba(0, 20, 70, 0.25);
+}
+
+.edition-card,
+.step-card,
+.price-card,
+#signup .card {
+  background: var(--glass-fill);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid var(--glass-edge);
+  border-radius: 24px;
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  isolation: isolate;
+}
+
+/* soft specular sheen across the top-left of the glass */
+.edition-card::before,
+.step-card::before,
+.price-card::before,
+#signup .card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 26%, rgba(255, 255, 255, 0) 55%),
+    radial-gradient(120% 60% at 50% 0%, rgba(140, 215, 255, 0.16), rgba(140, 215, 255, 0) 70%);
+}
+
+.edition-card:hover,
+.step-card:hover,
+.price-card:hover {
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* keep the inner panels (number chip, price header) consistent with the glossy blue buttons */
+.card-footer,
+.price-card .color,
+.price-card .color1,
+.popular-badge {
+  background: linear-gradient(135deg, #072D69 0%, #1969F5 100%);
+  border: 1px solid rgba(160, 220, 255, 0.35);
+  box-shadow: 0 0 16px rgba(43, 140, 255, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* ---------- Sign-up form fields: frosted glass inputs with icons ---------- */
+#signup .field input {
+  color: #fff;
+  color-scheme: dark;
+  background-color: rgba(160, 205, 255, 0.16);
+  background-repeat: no-repeat;
+  background-position: 14px center;
+  background-size: 18px 18px;
+  padding-left: 44px;
+  border: 1px solid rgba(160, 220, 255, 0.35);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 0 16px rgba(120, 190, 255, 0.12);
+}
+#signup .field input::placeholder { color: rgba(235, 245, 255, 0.72); }
+#signup .field input:focus {
+  background-color: rgba(190, 225, 255, 0.24);
+  border-color: rgba(160, 225, 255, 0.9);
+  box-shadow: 0 0 0 3px rgba(60, 170, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+#signup #fullname {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-opacity='.85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7'/%3E%3C/svg%3E");
+}
+#signup #email {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-opacity='.85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='2'/%3E%3Cpath d='M3 7l9 6 9-6'/%3E%3C/svg%3E");
+}
+#signup #password {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-opacity='.85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E");
+}
+
+/* ---------- Glossy blue pill buttons + glass quick sign-up buttons ---------- */
+#signup .btn {
+  border: 1px solid rgba(160, 220, 255, 0.45);
+  box-shadow: 0 0 18px rgba(43, 140, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -8px 14px rgba(0, 20, 80, 0.35);
+}
+#signup .quick-btn {
+  background: linear-gradient(135deg, rgba(238, 247, 255, 0.92), rgba(176, 210, 244, 0.82));
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 12px;
+  color: #0b2a55;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 6px 14px rgba(2, 16, 50, 0.25);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+#signup .quick-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(200, 227, 252, 0.92));
+  box-shadow: inset 0 1px 0 #fff, 0 10px 20px rgba(2, 16, 50, 0.32), 0 0 16px rgba(80, 180, 255, 0.5);
+}
+#signup .fine-print a,
+#signup .form-footer a { color: #fff; text-decoration: underline; text-underline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .edition-card, .step-card, .price-card { transition: none; }
+}
+</style>
+	
+<link rel="stylesheet" href="css/theme.css" />
+</head>
+<body>
+	<div id="smooth-wrapper">
+		<div id="smooth-content">
+			<!--- ALL YOUR CONTENT HERE --->
+	
+	<header>
+
+  <nav class="nav-left">
+    <a href="index.html" class="active">Begin Journey</a>
+    <a href="ebooks.html">E-Books</a>
+    <a href="index.html#pricing">Pricing</a>
+  </nav>
+  <a href="index.html" class="brand">Evertraced<span class="d">'S</span></a>		
+  <div class="nav-right">
+    <form class="search-pill" role="search" onsubmit="return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search" aria-label="Search" />
+    </form>
+    <a href="cart.html" class="cart-btn" aria-label="Cart">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      <span class="cart-badge" data-et-cart-badge>0</span>
+    </a>
+    <a href="signin.html" class="user-btn" data-et-user-btn aria-label="Account / Sign in">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</header>
+	<div id="smooth-wrapper">
+		<div id="smooth-content">
+<div class="canvas-container" aria-hidden="true">
+  <canvas id="scroll-canvas"></canvas>
+</div>
+<div class="steps-canvas-container" aria-hidden="true">
+  <canvas id="steps-scroll-canvas"></canvas>
+  <div class="steps-scrim"></div>
+</div>
+<div class="ocean-canvas-container" aria-hidden="true">
+  <canvas id="ocean-scroll-canvas"></canvas>
+  <div class="ocean-vignette"></div>
+  <div class="ocean-grain"></div>
+</div>
+<div class="signup-canvas-container" aria-hidden="true">
+  <canvas id="signup-scroll-canvas"></canvas>
+  <div class="signup-scrim"></div>
+  <div class="signup-vignette"></div>
+  <div class="signup-grain"></div>
+</div>
+
+		
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="cart.html">Cart</a>
+  <a href="index.html">Begin Journey</a>
+  <a href="ebooks.html">E-Books</a>
+  <a href="index.html#pricing">Pricing</a>
+  <a href="signin.html">Sign In</a>
+  <a href="signup.html">Create Account</a>
+</div>
+
+<main>
+	
+
+<section id="hero" class="hero-section">
+
+  <!-- Top-Right Floating Heart -->
+  <div class="floating-heart heart-top-right">
+    <svg viewBox="0 0 200 200" fill="none">
+      <defs>
+        <radialGradient id="heartGrad1" cx="35%" cy="30%" r="75%">
+          <stop offset="0%" stop-color="#FFA64D" />
+          <stop offset="35%" stop-color="#FF7A00" />
+          <stop offset="75%" stop-color="#EA580C" />
+          <stop offset="100%" stop-color="#9A3412" />
+        </radialGradient>
+        <linearGradient id="gloss1" x1="0%" y1="0%" x2="50%" y2="80%">
+          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85" />
+          <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M100 168 C72 142 22 102 22 58 C22 30 44 12 72 12 C86 12 95 19 100 28 C105 19 114 12 128 12 C156 12 178 30 178 58 C178 102 128 142 100 168 Z" fill="url(#heartGrad1)" />
+      <ellipse cx="62" cy="38" rx="22" ry="12" transform="rotate(-25 62 38)" fill="url(#gloss1)" />
+      <circle cx="56" cy="32" r="5" fill="#FFFFFF" opacity="0.9" />
+    </svg>
+  </div>
+
+  <!-- Central Stage: Airplane Window + City Tags -->
+  <div class="hero-stage">
+    <!-- Left City Tags -->
+    <div class="city-group left">
+      <div class="city-tag"><i class="fa-solid fa-location-dot"></i><span>Amsterdam</span></div>
+      <div class="city-tag offset-left"><i class="fa-solid fa-location-dot"></i><span>Dubai</span></div>
+      <div class="city-tag"><i class="fa-solid fa-location-dot"></i><span>Melbourne</span></div>
+    </div>
+
+    <!-- Airplane Window Frame -->
+    <div class="badge">
+           <!-- Overlapping Price Pill -->
+      <div class="hero-price-badge">
+        <span class="badge-label">Begin Now</span>
+        <span class="badge-prices"><del>$229</del> &gt; <strong>$129</strong></span>
+      </div>
+		 <div class="hero-content">
+    <h1 class="hero-title">
+      Your Story <span class="script-accent">Evertraced</span> In Print
+    </h1>
+    <p class="hero-desc">
+      We design cinematic custom e-books from the moments you've lived — your travels, your love story, your family legacy. Three steps. Infinite chapters.
+    </p>
+  </div>
+    </div>
+
+    <!-- Right City Tags -->
+    <div class="city-group right">
+      <div class="city-tag"><i class="fa-solid fa-location-dot"></i><span>Istanbul</span></div>
+      <div class="city-tag offset-right"><i class="fa-solid fa-location-dot"></i><span>Baku</span></div>
+      <div class="city-tag"><i class="fa-solid fa-location-dot"></i><span>London</span></div>
+    </div>
+  </div>
+  <!-- Bottom Bar: Bottom-Left Floating Heart + Scroll Pill -->
+	
+  <div class="hero-bottom-bar">
+    <div class="floating-heart heart-bottom-left">
+      <svg viewBox="0 0 200 200" fill="none">
+        <path d="M100 168 C72 142 22 102 22 58 C22 30 44 12 72 12 C86 12 95 19 100 28 C105 19 114 12 128 12 C156 12 178 30 178 58 C178 102 128 142 100 168 Z" fill="url(#heartGrad1)" />
+        <ellipse cx="62" cy="38" rx="22" ry="12" transform="rotate(-25 62 38)" fill="url(#gloss1)" />
+        <circle cx="56" cy="32" r="5" fill="#FFFFFF" opacity="0.9" />
+      </svg>
+    </div>
+ 
+  </div>
+</section>
+
+<section id="memories" class="memories-section">
+ 
+  <div class="memories-center-content">
+	<h1 class="lead">Evertraced</h1> 
+    <h2 class="memories-lead">WE TREAT YOUR</h2>
+    <div class="memories-script">Memories</div>
+    <h3 class="memories-sub">EVERTRACED</h3>
+  </div>
+
+  <!-- Bottom Scroll Pill -->
+  <div class="memories-bottom-bar">
+    <a href="#steps" class="scroll-capsule" aria-label="Scroll to next section">
+      <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+        <path d="M12 5v14M19 12l-7 7-7-7"></path>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<section id="steps">
+  <div class="tag reveal">Start Your Journey</div>
+  <h2 class="reveal" style="transition-delay:.1s">Three Steps From a <span class="script">Folder of Photos</span> to a Book Worth Keeping Forever</h2>
+  <div class="steps-price reveal" style="transition-delay:.2s; top: 10vh;">
+  <div class="label">Limited Time Offer <span class="off">30% off</span></div>
+  <div class="badge">$299 ➺ $89</div>
+</div>
+  <div class="para-text">Evertraced</div>
+</section>
+
+<section id="categories">
+  <h2 class="reveal">Four Choices,<br/><strong>One Unforgettable Impression.</strong></h2>
+  <div class="cards-grid">
+    <a href="studio.html?type=travel" class="edition-card reveal">
+      <p class="card-title">Travel Book</p>
+      <p class="card-cta"><span>↗</span> Start This Edition</p>
+      <div class="card-footer"><span class="card-num">01</span><span class="card-pages">60–200<br>Pages</span></div>
+    </a>
+    <a href="studio.html?type=memoir" class="edition-card reveal" style="transition-delay:.08s">
+      <p class="card-title">Story &amp; Memoir</p>
+      <p class="card-cta"><span>↗</span> Start This Edition</p>
+      <div class="card-footer"><span class="card-num">02</span><span class="card-pages">80–240<br>Pages</span></div>
+    </a>
+    <a href="studio.html?type=legacy" class="edition-card reveal" style="transition-delay:.16s">
+      <p class="card-title">Family Legacy</p>
+      <p class="card-cta"><span>↗</span> Start This Edition</p>
+      <div class="card-footer"><span class="card-num">03</span><span class="card-pages">100–300<br>Pages</span></div>
+    </a>
+    <a href="studio.html?type=wedding" class="edition-card reveal" style="transition-delay:.24s">
+      <p class="card-title">Wedding &amp; Love</p>
+      <p class="card-cta"><span>↗</span> Start This Edition</p>
+      <div class="card-footer"><span class="card-num">04</span><span class="card-pages">60–180<br>Pages</span></div>
+    </a>
+  </div>
+</section>
+<section id="ocean">
+  <div class="ocean-content reveal">
+    <h2>Your Everlasting<br/><span class="script">Journey</span><br/>Starts Here</h2>
+    <p>Explore every destination you've ever dreamed of — then capture it forever in your Evertraced.</p>
+  </div>
+</section>
+
+<section id="how">
+  <p class="eyebrow reveal">Final Moves Ahead</p>
+  <h2 class="reveal">Three Simple Steps To Your Book</h2>
+  <div class="steps-row">
+    <div class="step-card reveal" style="transition-delay:.1s"><div class="step-num">01</div><div class="step-title">Choose Template</div><div class="step-desc">Pick from our curated selection of beautifully designed book templates that match your journey's vibe.</div></div>
+    <div class="step-card reveal" style="transition-delay:.2s"><div class="step-num">02</div><div class="step-title">Upload Photos</div><div class="step-desc">Drag and drop your favourite photos. Our smart layout engine arranges them into stunning pages.</div></div>
+    <div class="step-card reveal" style="transition-delay:.3s"><div class="step-num">03</div><div class="step-title">Receive E-Book</div><div class="step-desc">Preview instantly online, approve, and receive your digital or printed book delivered with love.</div></div>
+  </div>
+  <a href="studio.html?type=travel" class="btn btn-yellow reveal" style="margin-top:44px; transition-delay:.4s">Begin Now</a>
+</section>
+<section id="pricing">
+  <h2 class="reveal">Preview Free.<br/>Keep The Edition You Love.</h2>
+  <p class="reveal" style="transition-delay:.1s">No commitment until you fall in love with your book.</p>
+  <div class="pricing-cards">
+    <div class="price-card reveal" style="transition-delay:.1s">
+      <div class="color" style=" background: linear-gradient(135deg, #072D69, #1969F5);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 0 16px rgba(43,140,255,0.55); border-radius: 30px;">
+		<h3>Digital Book</h3>
+		<p style="margin-left: 0px; font-size: 15px; font-weight: 400; color: white; text-align: center;
+   ">Starting From</p>
+      <div class="amount">$29</div>
+		  </div>
+      <ul><li>Unlimited Digital Sharing</li><li>HD Resolution Download</li><li>Lifetime Cloud Storage</li><li>Unique Flip Book</li></ul>
+      <a href="package.html?plan=digital" class="btn btn-lime btn-block" style=" color: white"><i class="fa-solid fa-unlock"></i>Unlock My Book</a>
+    </div>
+    <div class="price-card popular reveal" style="transition-delay:.2s">
+      <div class="popular-badge">Most Loved</div>
+	<div class="color1"  style=" background: linear-gradient(135deg, #072D69, #1969F5);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 0 16px rgba(43,140,255,0.55); border-radius: 30px;">	
+      <h3>Hard Book</h3>
+		<p style="margin-left: -28px; font-size: 15px; font-weight: 400; color: white; width: 123%; text-align: center;
+   ">Starting From</p>
+      <div class="amount">$129</div>
+		</div>
+      <ul><li>Premium Print Quality</li><li>Hardcover Binding</li><li>Free Digital Edition</li><li>Unique Flip Book</li></ul>
+      <a href="package.html?plan=hardcover" class="btn btn-lime btn-block" style="background-color: #c3144e; color: white"><i class="fa-solid fa-unlock" ></i>Unlock My Book</a>
+    </div>
+  </div>
+
+<section id="signup">
+  <h2 class="reveal" style="font-weight: 700; font-family: var(--font-play); font-style: normal; color: white;">Begin You Evertraced Book </h2>
+  
+  <div class="stage">
+    <div class="card card-left">
+      <h2>Create Your Account</h2>
+      <form id="homeSignupForm" novalidate>
+        <div class="field">
+          <label for="fullname">Full Name</label>
+          <input id="fullname" type="text" placeholder="Jamie Rivera" required>
+          <p class="field-error">Required.</p>
+        </div>
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input id="email" type="email" placeholder="you@example.com" required>
+          <p class="field-error">Enter a Valid Email Address.</p>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="At least 6 characters" required minlength="6">
+          <p class="field-error">Use at least 6 characters.</p>
+        </div>
+        <div class="form-footer">
+          <p>Already Have An Account?<br><a href="signin.html">Click Here</a></p>
+<button class="btn" type="submit" style="color: white; width: 175px;">Submit
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card card-right">
+      <h2>Quick Sign-up</h2>
+      <div class="quick-list">
+        <button type="button" class="quick-btn" onclick="window.etToast('Google sign-up is a demo in this build.')">
+          <span class="icon">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.5 29.6 4 24 4c-7.5 0-14 4.2-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.5 35.4 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-8l-6.6 5.1C9.9 39.8 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.6 5.4C40.7 36.4 44 30.7 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+          </span>
+          Continue with Google
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </button>
+        <button type="button" class="quick-btn" onclick="window.etToast('Apple sign-up is a demo in this build.')">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#111" d="M16.365 1.43c0 1.14-.428 2.163-1.13 2.943-.79.876-2.08 1.548-3.13 1.46-.13-1.1.44-2.25 1.13-2.98.78-.84 2.13-1.46 3.13-1.42zM20.13 17.29c-.51 1.18-.75 1.71-1.4 2.75-.91 1.46-2.2 3.28-3.79 3.29-1.42.02-1.78-.92-3.7-.91-1.92.01-2.32.93-3.74.91-1.59-.02-2.81-1.66-3.72-3.12C1.32 16.9.63 12.62 2.3 10.19c.94-1.4 2.52-2.28 4.02-2.29 1.44-.02 2.8.97 3.7.97.89 0 2.56-1.2 4.31-1.02.73.03 2.79.3 4.11 2.24-.1.07-2.45 1.44-2.43 4.3.03 3.43 3 4.57 3.13 4.9z"/></svg>
+          </span>
+          Continue with Apple
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </button>
+        <button type="button" class="quick-btn" onclick="window.etToast('Microsoft sign-up is a demo in this build.')">
+          <span class="icon">
+            <svg width="16" height="16" viewBox="0 0 24 24"><rect x="2" y="2" width="9" height="9" fill="#F35325"/><rect x="13" y="2" width="9" height="9" fill="#81BC06"/><rect x="2" y="13" width="9" height="9" fill="#05A6F0"/><rect x="13" y="13" width="9" height="9" fill="#FFBA08"/></svg>
+          </span>
+          Continue with Microsoft
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </button>
+        <button type="button" class="quick-btn" onclick="window.location.href='signup.html'">
+          <span class="icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2a3a70" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+          </span>
+          Continue with Email
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M7 17L17 7M9 7h8v8"/></svg>
+        </button>
+      </div>
+      <p class="fine-print">By continuing, you acknowledge the Privacy Policy and agree to the <a href="#terms" onclick="window.etToast('Terms of Service — demo build.'); return false;">Terms of Service</a> and <a href="#policy" onclick="window.etToast('Acceptable Use Policy — demo build.'); return false;">Acceptable Use Policy</a>.</p>
+
+    </div>
+  </div>
+</section>
+</section>
+ 	
+</main>
+
+<footer>
+  <div class="footer-logo">Evertraced</div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="ebooks.html">E-Books</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="signin.html">Sign In</a>
+    <a href="studio.html?type=travel">Create a Book</a>
+    <a href="preview.html?type=travel">Preview My Book</a>
+    <a href="mybooks.html">My Books</a>
+  </div>
+	  <p>© 2026 Evertraced. Your Story, Beautifully Preserved.</p>
+</footer>
+	<!--- ALL YOUR CONTENT HERE --->
+		</div>
+	</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/scroll-animations.js"></script>
+
+<script>
+	gsap.fromTo(".ship-wrap",
+  { y: 180, rotate: -1.5,},
+  {
+      y: -280,
+      rotate: 1.5,
+      ease: "none",
+	  scrollTrigger: {
+      trigger: "#ocean",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 1.6,
+      invalidateOnRefresh: true,
+    }
+  }
+);
+
+// Gentle zoom on the ocean gif itself so it doesn't just snap into place
+	
+gsap.fromTo("#ocean",
+  { backgroundSize: "118%" },
+  {
+    backgroundSize: "100%",
+    ease: "none",
+    scrollTrigger: {
+      trigger: "#ocean",
+      start: "top bottom",
+      end: "center center",
+      scrub: 1.6,
+    }
+  }
+);
+// Window FRAME zooms in on scroll (moved from the inner photo to the frame itself).
+// As you scroll, the frame scales up and squares off, taking over the screen and
+// handing off to the #memories section (same airplane/cloud photo) right beneath it.
+var heroFrameScale = Math.max(3, Math.ceil(Math.max(window.innerWidth, window.innerHeight) / 240) + 1);
+
+gsap.fromTo(".hero-window",
+  { scale: 1, borderRadius: "70px" },
+  {
+    // Was scale: 14 — way past what's needed to fill the viewport, which made
+    // the window balloon to 3000px+ wide. That oversized transform was
+    // expensive to paint/clip and threw off the scroll handoff into the
+    // section below. Scale just enough to cover the viewport instead.
+    scale: heroFrameScale,
+    borderRadius: "0%",
+    ease: "none",
+    scrollTrigger: {
+      trigger: "#hero",
+      start: "top top",
+      end: "+=85%",
+      scrub: 1.2,
+      pin: ".hero-window-wrap",
+      pinSpacing: false,
+      invalidateOnRefresh: true,
+    }
+  }
+);
+
+// Realistic "looking out the window" depth effect: as the frame zooms toward
+// the viewer, the view outside subtly zooms too (a real window pane getting
+// closer makes the outside view feel closer as well) — but at a much gentler
+// rate than the frame, so the frame's geometry still reads as the dominant
+// motion and the photo never outpaces or detaches from the opening.
+gsap.fromTo(".window-inner",
+  { scale: 1 },
+  {
+    scale: 1 + (heroFrameScale - 1) * 0.35,
+    ease: "none",
+    scrollTrigger: {
+      trigger: "#hero",
+      start: "top top",
+      end: "+=85%",
+      scrub: 1.2,
+      invalidateOnRefresh: true,
+    }
+  }
+);
+
+
+
+gsap.fromTo("#memories",
+  { backgroundSize: "160%" },
+  {
+    backgroundSize: "100%",
+    ease: "none",
+    scrollTrigger: {
+      trigger: "#memories",
+      start: "top 130%",
+      end: "top top",
+      scrub: 1.2,
+    }
+  }
+);
+
+// ---------- Same zoom-in-on-scroll effect applied to every section with a background image ----------
+	
+["#steps", "#categories", "#pricing"].forEach((sel) => {
+  gsap.fromTo(sel,
+    { backgroundSize: "160%" },
+    {
+      backgroundSize: "100%",
+      ease: "none",
+      scrollTrigger: {
+        trigger: sel,
+        start: "top bottom",
+        end: "top top",
+        scrub: 1.2,
+      }
+    }
+  );
+});
+
+// #ocean has two sections sharing the same ID — target both explicitly
+	
+document.querySelectorAll("#ocean").forEach((el) => {
+  gsap.fromTo(el,
+    { backgroundSize: "160%" },
+    {
+      backgroundSize: "100%",
+      ease: "none",
+      scrollTrigger: {
+        trigger: el,
+        start: "top bottom",
+        end: "top top",
+        scrub: 1.2,
+      }
+    }
+  );
+});
+	</script>
+  <script>
+  /* ===================== HERO → MEMORIES FRAME SEQUENCE ===================== */
+  (() => {
+    const frameCount = 263;
+    const canvas = document.getElementById('scroll-canvas');
+    const hero = document.getElementById('hero');
+    const memories = document.getElementById('memories');
+    if (!canvas || !hero || !memories) return;
+    
+    const ctx = canvas.getContext('2d', {alpha:false, desynchronized:true});
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
+    const images = new Array(frameCount);
+    let loaded = 0, targetFrame = 0, currentFrame = 0, raf = 0;
+    let ready = false;
+
+    function setCanvasSize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = Math.round(innerWidth * dpr);
+      const h = Math.round(innerHeight * dpr);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        lastDrawn = -1;
+        if (ready) render(currentFrame);
+      }
+    }
+
+    function drawCover(img) {
+      if (!img || !img.complete || !img.naturalWidth) return;
+      const cw=canvas.width, ch=canvas.height;
+      const scale=Math.max(cw/img.naturalWidth, ch/img.naturalHeight);
+      const dw=img.naturalWidth*scale, dh=img.naturalHeight*scale;
+      const x=(cw-dw)*0.5, y=(ch-dh)*0.5;
+      ctx.clearRect(0,0,cw,ch);
+      ctx.drawImage(img, x, y, dw, dh);
+    }
+
+    /* A frame that has not finished loading used to draw nothing, so the previous
+       image just froze on screen and the sequence looked like it had skipped
+       frames. Fall back to the nearest frame that IS loaded instead. */
+    function isReady(img){ return img && img.complete && img.naturalWidth; }
+    let lastDrawn = -1;
+    function render(frame) {
+      const i=Math.max(0,Math.min(frameCount-1,Math.round(frame)));
+      let use=-1;
+      for(let d=0; d<frameCount; d++){
+        if(isReady(images[i-d])){ use=i-d; break; }
+        if(isReady(images[i+d])){ use=i+d; break; }
+      }
+      if(use<0 || use===lastDrawn) return;
+      lastDrawn=use;
+      drawCover(images[use]);
+    }
+
+    function animate() {
+      const diff=targetFrame-currentFrame;
+      if(Math.abs(diff)>0.01){
+        currentFrame += diff*0.18;
+        render(currentFrame);
+        raf=requestAnimationFrame(animate);
+      } else {
+        currentFrame=targetFrame;
+        render(currentFrame);
+        raf=0;
+      }
+    }
+
+    function updateFromScroll() {
+      const start = hero.offsetTop;
+      const end = memories.offsetTop + memories.offsetHeight;
+      const max = Math.max(1, end - start);
+      const progress = Math.max(0, Math.min(1, (window.scrollY - start) / max));
+      targetFrame = progress * (frameCount - 1);
+      if (!raf) raf = requestAnimationFrame(animate);
+      canvas.style.opacity = window.scrollY > end ? '0' : '1';
+    }
+
+    function build() {
+      setCanvasSize();
+      /* Load in frame order, a few at a time, so the early frames (the ones the
+         capsule click scrolls through first) arrive before the later ones instead
+         of all 263 big JPEGs fighting each other at once. */
+      let next = 0;
+      const PARALLEL = 6;
+      function loadOne(){
+        if(next>=frameCount) return;
+        const i=next++;
+        const img=new Image();
+        img.decoding='async';
+        const done=()=>{
+          loaded++;
+          if(img.naturalWidth && img.decode) img.decode().catch(()=>{});
+          if(i===0 || (loaded>20 && !ready)){ ready=true; lastDrawn=-1; render(currentFrame); }
+          else if(Math.abs(i-Math.round(currentFrame))<4) { lastDrawn=-1; render(currentFrame); }
+          loadOne();
+        };
+        img.onload=done;
+        img.onerror=done;
+        img.src=`assets/img/hero/hero_${String(i).padStart(5,'0')}.jpg`;
+        images[i]=img;
+      }
+      for(let k=0;k<PARALLEL;k++) loadOne();
+      ready=true;
+      render(0);
+      updateFromScroll();
+    }
+
+    window.addEventListener('resize', setCanvasSize, {passive:true});
+    window.addEventListener('scroll', updateFromScroll, {passive:true});
+    build();
+  })();
+  </script>
+  <script>
+  /* ===================== STEPS → CATEGORIES FRAME SEQUENCE ===================== */
+  (() => {
+    const wrap = document.querySelector('.steps-canvas-container');
+    const canvas = document.getElementById('steps-scroll-canvas');
+    const steps = document.getElementById('steps');
+    const categories = document.getElementById('categories');
+    if (!wrap || !canvas || !steps || !categories) return;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const frameCount = 333;
+    const framePath = (i) => `assets/img/steps-frames/steps-frame-${String(i + 1).padStart(3, '0')}.webp`;
+    const images = new Array(frameCount);
+
+    function makeImage(i) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = framePath(i);
+      images[i] = img;
+      return img;
+    }
+
+    const EAGER = 24;
+    for (let i = 0; i < Math.min(EAGER, frameCount); i++) makeImage(i);
+
+    let nextToLoad = Math.min(EAGER, frameCount);
+    function loadNextBatch() {
+      if (nextToLoad >= frameCount) return;
+      const end = Math.min(nextToLoad + 16, frameCount);
+      let pending = end - nextToLoad;
+      for (let i = nextToLoad; i < end; i++) {
+        const img = makeImage(i);
+        const done = () => { if (--pending <= 0) setTimeout(loadNextBatch, 0); };
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+      }
+      nextToLoad = end;
+    }
+    /* Queued after the page has loaded so it never competes with the hero. */
+    if (document.readyState === 'complete') setTimeout(loadNextBatch, 600);
+    else window.addEventListener('load', () => setTimeout(loadNextBatch, 600), { once: true });
+
+    function resizeCanvas() {
+      const cssW = window.innerWidth;
+      const cssH = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      /* Never render the backing store larger than the 1920x1080 source needs
+         (plus a 2x cap for retina) - sharp, but no wasted fill-rate. */
+      const cap = Math.max(1, 3840 / Math.max(1, cssW));
+      const scale = Math.max(1, Math.min(dpr, cap));
+      canvas.width = Math.round(cssW * scale);
+      canvas.height = Math.round(cssH * scale);
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    }
+    resizeCanvas();
+
+    function readyImage(idx) {
+      for (let d = 0; d < frameCount; d++) {
+        const back = images[idx - d];
+        if (back && back.complete && back.naturalWidth) return back;
+        const fwd = images[idx + d];
+        if (fwd && fwd.complete && fwd.naturalWidth) return fwd;
+      }
+      return null;
+    }
+
+    /* Make sure the frames around the playhead are always loaded, so a jump
+       (anchor click, scrollbar drag) never lands on an empty slot. */
+    function ensureAround(idx) {
+      for (let k = -4; k <= 20; k++) {
+        const n = idx + k;
+        if (n >= 0 && n < frameCount && !images[n]) makeImage(n);
+      }
+    }
+
+    let lastDrawn = -1;
+    function drawFrame(idx) {
+      const img = readyImage(idx);
+      if (!img) return;
+      ensureAround(idx);
+      const cw = window.innerWidth, ch = window.innerHeight;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+      lastDrawn = idx;
+      for (let k = -6; k <= 12; k++) {
+        const n = images[idx + k];
+        if (n && n.complete && n.naturalWidth && n.decode) n.decode().catch(() => {});
+      }
+    }
+
+    const getRange = () => {
+      const sRect = steps.getBoundingClientRect();
+      const cRect = categories.getBoundingClientRect();
+      return {
+        start: sRect.top + window.scrollY,
+        end: cRect.bottom + window.scrollY
+      };
+    };
+
+    let currentFrame = 0;
+    let targetFrame = 0;
+    let ticking = false;
+
+    function onScroll() {
+      const { start, end } = getRange();
+      const y = window.scrollY;
+      const inRange = y >= start - window.innerHeight * 0.15 && y <= end;
+      wrap.style.opacity = inRange ? '1' : '0';
+      if (!inRange) return;
+
+      const progress = Math.max(0, Math.min(1, (y - start) / Math.max(1, end - start)));
+      targetFrame = progress * (frameCount - 1);
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    function update() {
+      const diff = targetFrame - currentFrame;
+      if (Math.abs(diff) < 0.02) currentFrame = targetFrame;
+      else currentFrame += diff * 0.20;
+
+      const idx = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
+      if (idx !== lastDrawn) drawFrame(idx);
+
+      if (Math.abs(targetFrame - currentFrame) > 0.02) requestAnimationFrame(update);
+      else ticking = false;
+    }
+
+    images[0].addEventListener('load', () => { lastDrawn = -1; drawFrame(Math.round(currentFrame)); });
+    images[0].addEventListener('error', () => { wrap.style.display = 'none'; }, { once: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      lastDrawn = -1;
+      drawFrame(Math.round(currentFrame));
+    });
+    onScroll();
+  })();
+  </script>
+  <script>
+  /* ===================== OCEAN → HOW CINEMATIC FRAME SEQUENCE ===================== */
+  (() => {
+    const wrap = document.querySelector('.ocean-canvas-container');
+    const canvas = document.getElementById('ocean-scroll-canvas');
+    const ocean = document.getElementById('ocean');
+    const how = document.getElementById('how');
+    if (!wrap || !canvas || !ocean || !how) return;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const frameCount = 300;
+    const framePath = (i) => `assets/img/ocean-hd/ocean-hd-${String(i + 1).padStart(3, '0')}.jpg`;
+    const images = new Array(frameCount);
+
+    function makeImage(i) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = framePath(i);
+      images[i] = img;
+      return img;
+    }
+
+    const EAGER = 60;
+    for (let i = 0; i < Math.min(EAGER, frameCount); i++) makeImage(i);
+
+    let nextToLoad = Math.min(EAGER, frameCount);
+    function loadNextBatch() {
+      if (nextToLoad >= frameCount) return;
+      const end = Math.min(nextToLoad + 24, frameCount);
+      let pending = end - nextToLoad;
+      for (let i = nextToLoad; i < end; i++) {
+        const img = makeImage(i);
+        const done = () => {
+          if (--pending <= 0) setTimeout(loadNextBatch, 0);
+        };
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+      }
+      nextToLoad = end;
+    }
+    if (document.readyState === 'complete') setTimeout(loadNextBatch, 0);
+    else window.addEventListener('load', () => setTimeout(loadNextBatch, 0), { once: true });
+
+    function resizeCanvas() {
+      const cssW = window.innerWidth;
+      const cssH = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(cssW * dpr);
+      canvas.height = Math.round(cssH * dpr);
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    }
+    resizeCanvas();
+
+    function readyImage(idx) {
+      for (let d = 0; d < frameCount; d++) {
+        const back = images[idx - d];
+        if (back && back.complete && back.naturalWidth) return back;
+        const fwd = images[idx + d];
+        if (fwd && fwd.complete && fwd.naturalWidth) return fwd;
+      }
+      return null;
+    }
+
+    function drawFrame(idx) {
+      const img = readyImage(idx);
+      if (!img) return;
+      const cw = window.innerWidth, ch = window.innerHeight;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const dw = img.naturalWidth * scale, dh = img.naturalHeight * scale;
+      const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, dx, dy, dw, dh);
+      // Pre-decode the frames just ahead/behind so fast scrolling never stalls.
+      for (let k = -6; k <= 12; k++) {
+        const n = images[idx + k];
+        if (n && n.complete && n.naturalWidth && n.decode) n.decode().catch(() => {});
+      }
+    }
+
+    const getRange = () => {
+      const oceanRect = ocean.getBoundingClientRect();
+      const howRect = how.getBoundingClientRect();
+      return {
+        start: oceanRect.top + window.scrollY,
+        end: howRect.bottom + window.scrollY
+      };
+    };
+
+    let currentFrame = 0;
+    let targetFrame = 0;
+    let ticking = false;
+
+    function onScroll() {
+      const { start, end } = getRange();
+      const y = window.scrollY;
+      const inRange = y >= start - window.innerHeight * 0.15 && y <= end;
+      wrap.style.opacity = inRange ? '1' : '0';
+      if (!inRange) return;
+
+      const progress = Math.max(0, Math.min(1, (y - start) / Math.max(1, end - start)));
+      targetFrame = progress * (frameCount - 1);
+
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    function update() {
+      const diff = targetFrame - currentFrame;
+      if (Math.abs(diff) < 0.015) currentFrame = targetFrame;
+      else currentFrame += diff * 0.20;
+
+      drawFrame(Math.round(currentFrame));
+
+      if (Math.abs(targetFrame - currentFrame) > 0.015) requestAnimationFrame(update);
+      else ticking = false;
+    }
+
+    images[0].addEventListener('load', () => drawFrame(0));
+    images[0].addEventListener('error', () => {
+      wrap.style.display = 'none';
+      ocean.style.setProperty('background-image', 'url("assets/img/tsunami.png")', 'important');
+    }, { once: true });
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      drawFrame(Math.round(currentFrame));
+    });
+    onScroll();
+  })();
+  </script>
+  <script>
+  /* ===================== PRICING → SIGNUP CINEMATIC FRAME SEQUENCE ===================== */
+  (() => {
+    const wrap = document.querySelector('.signup-canvas-container');
+    const canvas = document.getElementById('signup-scroll-canvas');
+    const pricing = document.getElementById('pricing');
+    const signup = document.getElementById('signup');
+    const footer = document.querySelector('footer');
+    if (!wrap || !canvas || !pricing || !signup || !footer) return;
+
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const frameCount = 264;
+    const framePath = (i) => `assets/img/signup-frames/signup-frame-${String(i + 1).padStart(3, '0')}.webp`;
+    const images = new Array(frameCount);
+
+    function makeImage(i) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = framePath(i);
+      images[i] = img;
+      return img;
+    }
+
+    const EAGER = 12;
+    for (let i = 0; i < Math.min(EAGER, frameCount); i++) makeImage(i);
+
+    let nextToLoad = Math.min(EAGER, frameCount);
+    function loadNextBatch() {
+      if (nextToLoad >= frameCount) return;
+      const end = Math.min(nextToLoad + 8, frameCount);
+      let pending = end - nextToLoad;
+      for (let i = nextToLoad; i < end; i++) {
+        const img = makeImage(i);
+        const done = () => { if (--pending <= 0) setTimeout(loadNextBatch, 0); };
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+      }
+      nextToLoad = end;
+    }
+    /* Queued behind the ocean sequence so the two never fight for bandwidth. */
+    if (document.readyState === 'complete') setTimeout(loadNextBatch, 1200);
+    else window.addEventListener('load', () => setTimeout(loadNextBatch, 1200), { once: true });
+
+    function resizeCanvas() {
+      const cssW = window.innerWidth;
+      const cssH = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const cap = Math.max(1, 3840 / Math.max(1, cssW));
+      const scale = Math.max(1, Math.min(dpr, cap));
+      canvas.width = Math.round(cssW * scale);
+      canvas.height = Math.round(cssH * scale);
+      canvas.style.width = cssW + 'px';
+      canvas.style.height = cssH + 'px';
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+    }
+    resizeCanvas();
+
+    function readyImage(idx) {
+      for (let d = 0; d < frameCount; d++) {
+        const back = images[idx - d];
+        if (back && back.complete && back.naturalWidth) return back;
+        const fwd = images[idx + d];
+        if (fwd && fwd.complete && fwd.naturalWidth) return fwd;
+      }
+      return null;
+    }
+
+    function drawFrame(idx) {
+      const img = readyImage(idx);
+      if (!img) return;
+      const cw = window.innerWidth;
+      const ch = window.innerHeight;
+      const iw = img.naturalWidth;
+      const ih = img.naturalHeight;
+      const scale = Math.max(cw / iw, ch / ih);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    }
+
+    let currentFrame = 0;
+    let targetFrame = 0;
+    let ticking = false;
+
+    function onScroll() {
+      const vh = window.innerHeight;
+      const pricingTop = pricing.getBoundingClientRect().top;
+      const signupBottom = signup.getBoundingClientRect().bottom;
+      const footerTop = footer.getBoundingClientRect().top;
+
+      /* Enter a little before #pricing arrives (same 15% pre-roll used on the
+         ocean sequence). Exit once the footer has actually taken over the
+         screen — not the instant its top pixel peeks into view, which used
+         to snap the sequence to opacity 0 while #signup itself was still
+         on screen, leaving a blank gap above the footer. On a short page
+         the browser's max scroll position can sit above that point, so once
+         scrolling has bottomed out and the footer clearly dominates the
+         screen, exit anyway — this is what still prevents the sequence from
+         getting stuck visible once the user hits the bottom of the page. */
+      const hasEntered = pricingTop <= vh * 0.85;
+      const atMaxScroll = Math.ceil(window.scrollY + vh) >= document.documentElement.scrollHeight;
+      const footerVisible = footerTop <= 0 || (atMaxScroll && footerTop < vh * 0.5);
+      const inRange = hasEntered && !footerVisible;
+
+      wrap.style.opacity = inRange ? '1' : '0';
+      if (!inRange) return;
+
+      /* The sequence becomes visible as soon as #pricing is 15% into view
+         (hasEntered above), so progress must start from THAT same point.
+         Starting it at pricingTop === 0 left frame 1 (the still yacht shot)
+         sitting on screen until #pricing reached the top of the viewport. */
+      const entryOffset = vh * 0.85;
+      const start = pricingTop + window.scrollY - entryOffset;
+      const end = signupBottom + window.scrollY;
+      const progress = Math.max(0, Math.min(1, (window.scrollY - start) / Math.max(1, end - start)));
+      targetFrame = progress * (frameCount - 1);
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }
+
+    function update() {
+      const diff = targetFrame - currentFrame;
+      if (Math.abs(diff) < 0.02) {
+        currentFrame = targetFrame;
+      } else {
+        currentFrame += diff * 0.18;
+      }
+      const idx = Math.max(0, Math.min(frameCount - 1, Math.round(currentFrame)));
+      drawFrame(idx);
+      if (Math.abs(targetFrame - currentFrame) > 0.02) {
+        requestAnimationFrame(update);
+      } else {
+        ticking = false;
+      }
+    }
+
+    images[0].addEventListener('load', () => drawFrame(0));
+    images[0].addEventListener('error', () => {
+      wrap.style.display = 'none';
+      pricing.style.setProperty('background-image', 'url("assets/img/cover.png")', 'important');
+    }, { once: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', () => { resizeCanvas(); drawFrame(Math.round(currentFrame)); });
+    onScroll();
+  })();
+  </script>
+	<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// Entrance timeline
+		
+const tl = gsap.timeline({defaults:{ease:"power3.out"}});
+
+tl.from(".nav", {y:-30, opacity:0, duration:0.7})
+  .from(".gsap-hero-item", {y:24, opacity:0, duration:0.8, stagger:0.15}, "-=0.35")
+  .from(".blob", {scale:0, opacity:0, rotate:-25, duration:1, ease:"back.out(1.6)"}, "-=0.8")
+  ;
+
+// Ambient float for the heart blob
+		
+gsap.to(".blob", {
+  y: 14,
+  rotate: 4,
+  duration: 3.2,
+  ease: "sine.inOut",
+  yoyo: true,
+  repeat: -1
+});
+
+// Subtle cloud drift
+		
+gsap.to(".cloud-layer", {
+  backgroundPositionX: "40px",
+  duration: 14,
+  ease: "sine.inOut",
+  yoyo: true,
+  repeat: -1
+});
+
+// Button micro-interaction (in addition to CSS)
+		
+document.querySelectorAll(".btn, .quick-btn").forEach(btn=>{
+  btn.addEventListener("mouseenter", ()=> gsap.to(btn, {scale:1.02, duration:0.2, ease:"power2.out"}));
+  btn.addEventListener("mouseleave", ()=> gsap.to(btn, {scale:1, duration:0.2, ease:"power2.out"}));
+});
+
+// Field focus pop
+		
+document.querySelectorAll(".field input").forEach(inp=>{
+  inp.addEventListener("focus", ()=> gsap.to(inp, {scale:1.015, duration:0.2, ease:"power2.out"}));
+  inp.addEventListener("blur", ()=> gsap.to(inp, {scale:1, duration:0.2, ease:"power2.out"}));
+});
+</script>
+<script>
+	
+  // Inline "Begin your Evertraced Book" signup form
+	
+  const homeSignupForm = document.getElementById('homeSignupForm');
+  if (homeSignupForm) {
+    homeSignupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameEl = document.getElementById('fullname');
+      const emailEl = document.getElementById('email');
+      const passEl = document.getElementById('password');
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value);
+
+      [nameEl, emailEl, passEl].forEach((el) => el.closest('.field').classList.remove('has-error'));
+      let valid = true;
+      if (!nameEl.value.trim()) { nameEl.closest('.field').classList.add('has-error'); valid = false; }
+      if (!emailOk) { emailEl.closest('.field').classList.add('has-error'); valid = false; }
+      if (passEl.value.length < 6) { passEl.closest('.field').classList.add('has-error'); valid = false; }
+      if (!valid) return;
+
+      const parts = nameEl.value.trim().split(/\s+/);
+      const firstName = parts.shift();
+      const lastName = parts.join(' ') || firstName;
+
+      window.EvertracedAuth.setUser({ firstName, lastName, email: emailEl.value.trim(), joinedAt: Date.now() });
+      window.etToast(`Welcome, ${firstName}! Your account is ready.`);
+      setTimeout(() => { window.location.href = 'studio.html?type=travel'; }, 800);
+    });
+  }
+	
+</script>
+		</div>
+	</div>		
+	<a href="#memories" class="scroll-capsule-1" id="heroCapsule" aria-label="Scroll to memories">
+  <svg class="scroll-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+    <path d="M12 5v14M19 12l-7 7-7-7"></path>
+  </svg>
+</a>
+<script src="js/polish.js" defer></script>
+</body>
+</html>
